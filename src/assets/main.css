@@ -1,8 +1,4 @@
-/* Tailwind は本雛形では未導入のため import を無効化している。
-   デザインは以下の CSS カスタムプロパティ（--jps-*）と @layer で定義した
-   ユーティリティ/コンポーネントクラスだけで成立する（素の CSS として機能）。
-   将来 DEV が Tailwind を導入する場合は次行を有効化する:
-   @import 'tailwindcss'; */
+@import 'tailwindcss';
 
 /* ─────────────────────────────────────────────────────────
    JPetStore — Design Tokens / Theme

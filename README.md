@@ -53,10 +53,11 @@ npm run test        # ユニットテスト（Vitest）
   パレットはテラコッタ (`--jps-primary` `#c0532a`) × セージ (`--jps-accent` `#3f8a6e`)
   × クリーム面 (`--jps-surface` `#fbf8f4`)。ライト/ダーク両対応（OS 追従 + `html.dark` / `html.light` で上書き）。
 - `main.css` には `@layer utilities` / `@layer components` で `.jps-btn` `.jps-badge`
-  `.jps-card` 等のクラスも定義済み。素の CSS として機能する。
-- **Tailwind は本雛形では未導入**。`main.css` 冒頭の `@import 'tailwindcss';` は
-  無効化してある。必要になったら DEV が `tailwindcss` + `@tailwindcss/vite` を追加し、
-  その行を有効化する。
+  `.jps-card` 等のクラスも定義済み。
+- **Tailwind v4 を導入済み**（HwHub と同構成の CSS-first セットアップ）。
+  `@tailwindcss/vite` プラグインを `vite.config.ts` に組み込み、`main.css` の
+  1 行目で `@import 'tailwindcss';` を読み込む。`tailwind.config.js` は content glob と
+  空の `theme.extend` のみの最小構成（`@tailwindcss/line-clamp` は v4 標準搭載のため不採用）。
 
 ## ディレクトリ構成
 
