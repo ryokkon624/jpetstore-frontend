@@ -1,90 +1,52 @@
 <script setup lang="ts">
-// デザイントークン（main.css の --jps-*）とヒーロー/ロゴが効くことを示すトップ画面。
-// ドメイン画面（商品一覧/カート/注文など）はこの雛形では作り込まない。
+// AC1/AC2/AC4: AppLayout(共通ヘッダー)+ i18n(英語) でトップ画面を構成する。
+// ドメイン画面（商品一覧/カート/注文など）はこの雛形では作り込まない（土台規律）。
+import { useI18n } from 'vue-i18n'
+import AppLayout from '@/components/AppLayout.vue'
 import heroImage from '@/assets/hero.png'
-import logoUrl from '@/assets/logo.svg'
+
+const { t } = useI18n()
 </script>
 
 <template>
-  <div class="home">
-    <header class="jps-header">
-      <div class="jps-header__bar home__header">
-        <img :src="logoUrl" alt="JPetStore" class="home__logo" />
-        <nav class="home__nav">
-          <a class="jps-navlink jps-navlink-active" href="#">ホーム</a>
-          <a class="jps-navlink" href="#">カタログ</a>
-          <a class="jps-navlink" href="#">カート</a>
-        </nav>
-      </div>
-    </header>
-
-    <main class="home__main">
+  <AppLayout>
+    <div class="home">
       <!-- ヒーロー: 画像を全面に敷き、テキストは右 1/3 のパネルに乗せる構図 -->
       <section class="hero" :style="{ '--hero-image': `url(${heroImage})` }">
-        <div
-          class="hero__media"
-          role="img"
-          aria-label="犬・猫・鳥・金魚が集まる、あたたかく親しみやすいペットショップの様子"
-        ></div>
+        <div class="hero__media" role="img" :aria-label="t('home.hero.title')"></div>
         <div class="hero__panel">
-          <p class="hero__eyebrow">モダンに生まれ変わった</p>
-          <h1 class="hero__title">ペットとの暮らしを、<br />もっと身近に。</h1>
-          <p class="hero__lead">
-            魚・犬・猫・爬虫類・鳥。JPetStore は、お気に入りのパートナーと出会えるオンラインペットストアです。
-          </p>
+          <p class="hero__eyebrow">{{ t('home.hero.eyebrow') }}</p>
+          <h1 class="hero__title">{{ t('home.hero.title') }}</h1>
+          <p class="hero__lead">{{ t('home.hero.lead') }}</p>
           <div class="hero__actions">
-            <a class="jps-btn jps-btn-primary jps-btn-lg" href="#">カタログを見る</a>
-            <a class="jps-btn jps-btn-secondary jps-btn-lg" href="#">はじめての方へ</a>
+            <a class="jps-btn jps-btn-primary jps-btn-lg" href="#">
+              {{ t('home.hero.browseCatalog') }}
+            </a>
+            <a class="jps-btn jps-btn-secondary jps-btn-lg" href="#">
+              {{ t('home.hero.newHere') }}
+            </a>
           </div>
         </div>
       </section>
 
       <!-- デザイントークンがこの雛形で有効に効いていることの確認スロット -->
       <section class="tokens jps-card jps-card-pad">
-        <h2 class="tokens__title">デザイントークン確認</h2>
-        <p class="tokens__desc">
-          main.css の CSS カスタムプロパティ（--jps-primary / --jps-accent / --jps-surface
-          など）と @layer で定義したクラスが、Tailwind 非導入のまま効いていることの確認用スロットです。
-        </p>
+        <h2 class="tokens__title">{{ t('home.tokens.title') }}</h2>
+        <p class="tokens__desc">{{ t('home.tokens.desc') }}</p>
         <div class="tokens__row">
-          <span class="jps-badge badge-jps-stock-in">在庫あり</span>
-          <span class="jps-badge badge-jps-stock-low">残りわずか</span>
-          <span class="jps-badge badge-jps-stock-out">在庫なし</span>
+          <span class="jps-badge badge-jps-stock-in">{{ t('home.tokens.stockIn') }}</span>
+          <span class="jps-badge badge-jps-stock-low">{{ t('home.tokens.stockLow') }}</span>
+          <span class="jps-badge badge-jps-stock-out">{{ t('home.tokens.stockOut') }}</span>
           <span class="jps-chip">Fish</span>
           <span class="jps-chip jps-chip-active">Dogs</span>
         </div>
       </section>
-    </main>
-  </div>
+    </div>
+  </AppLayout>
 </template>
 
 <style scoped>
 .home {
-  min-height: 100vh;
-  background-color: var(--jps-surface);
-}
-
-.home__header {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.home__logo {
-  height: 40px;
-  width: auto;
-}
-
-.home__nav {
-  display: flex;
-  gap: 0.25rem;
-  margin-left: auto;
-}
-
-.home__main {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.75rem;
   display: flex;
   flex-direction: column;
   gap: 2rem;
