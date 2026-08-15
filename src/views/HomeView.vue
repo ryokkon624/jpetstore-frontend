@@ -2,6 +2,7 @@
 // AC1/AC2/AC4: AppLayout(共通ヘッダー)+ i18n(英語) でトップ画面を構成する。
 // ドメイン画面（商品一覧/カート/注文など）はこの雛形では作り込まない（土台規律）。
 import { useI18n } from 'vue-i18n'
+import { RouterLink } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import heroImage from '@/assets/hero.png'
 
@@ -19,9 +20,9 @@ const { t } = useI18n()
           <h1 class="hero__title">{{ t('home.hero.title') }}</h1>
           <p class="hero__lead">{{ t('home.hero.lead') }}</p>
           <div class="hero__actions">
-            <a class="jps-btn jps-btn-primary jps-btn-lg" href="#">
+            <RouterLink to="/catalog" class="jps-btn jps-btn-primary jps-btn-lg">
               {{ t('home.hero.browseCatalog') }}
-            </a>
+            </RouterLink>
             <a class="jps-btn jps-btn-secondary jps-btn-lg" href="#">
               {{ t('home.hero.newHere') }}
             </a>
@@ -34,9 +35,9 @@ const { t } = useI18n()
         <h2 class="tokens__title">{{ t('home.tokens.title') }}</h2>
         <p class="tokens__desc">{{ t('home.tokens.desc') }}</p>
         <div class="tokens__row">
-          <span class="jps-badge badge-jps-stock-in">{{ t('home.tokens.stockIn') }}</span>
-          <span class="jps-badge badge-jps-stock-low">{{ t('home.tokens.stockLow') }}</span>
-          <span class="jps-badge badge-jps-stock-out">{{ t('home.tokens.stockOut') }}</span>
+          <span class="jps-badge badge-jps-stock-in">{{ t('catalog.stockStatus.inStock') }}</span>
+          <span class="jps-badge badge-jps-stock-low">{{ t('catalog.stockStatus.lowStock') }}</span>
+          <span class="jps-badge badge-jps-stock-out">{{ t('catalog.stockStatus.outStock') }}</span>
           <span class="jps-chip">Fish</span>
           <span class="jps-chip jps-chip-active">Dogs</span>
         </div>

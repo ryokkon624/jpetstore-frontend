@@ -28,9 +28,49 @@ export default {
     tokens: {
       title: 'Design Token Check',
       desc: 'A verification slot confirming the CSS custom properties (--jps-primary / --jps-accent / --jps-surface, etc.) and the \\@layer classes defined in main.css work as expected.',
-      stockIn: 'In Stock',
-      stockLow: 'Low Stock',
-      stockOut: 'Out of Stock',
+    },
+  },
+  catalog: {
+    breadcrumb: {
+      home: 'Home',
+      catalog: 'Catalog',
+    },
+    category: {
+      title: 'Shop by Category',
+      lead: 'Browse our pet categories to find your perfect companion.',
+    },
+    product: {
+      itemsTitle: 'Available Items',
+    },
+    item: {
+      addToCart: 'Add to Cart',
+      addToCartComingSoon: 'Coming soon',
+    },
+    table: {
+      itemId: 'Item ID',
+      description: 'Description',
+      price: 'Price',
+      stock: 'Stock',
+    },
+    pagination: {
+      navLabel: 'Pagination',
+      previous: 'Previous',
+      next: 'Next',
+    },
+    stockStatus: {
+      inStock: 'In Stock',
+      lowStock: 'Low Stock',
+      outStock: 'Out of Stock',
+      unknown: 'Unknown',
+    },
+    empty: {
+      categories: 'No categories found.',
+      products: 'No products found in this category.',
+      items: 'No items found for this product.',
+    },
+    error: {
+      title: 'Something went wrong',
+      desc: 'We could not load this page. Please try again later.',
     },
   },
   auth: {
