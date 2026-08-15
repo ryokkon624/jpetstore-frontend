@@ -18,6 +18,12 @@ describe('sanitizeRedirectTarget', () => {
     [' /evil', '先頭空白( /evil)'],
     ['javascript:alert(1)', 'javascriptスキーム'],
     ['evil.com', 'スキーム/スラッシュ無しの裸文字列'],
+    ['/\t/evil.com', 'タブ混入(2文字目・レビュー指摘: WHATWG URLパーサはタブを位置問わず除去)'],
+    ['/\n//evil', '改行(LF)混入'],
+    ['/\r/evil', '改行(CR)混入'],
+    // %2F%09%2Fevil.com をデコードすると '/\t/evil.com' になる(vue-routerはクエリ値を
+    // 自動デコードするため、sanitizeRedirectTarget はデコード後のこの文字列を受け取る)。
+    [decodeURIComponent('%2F%09%2Fevil.com'), 'URLエンコードされたタブのデコード相当'],
   ])('外部/プロトコル相対な復帰先(%s: %s)は拒否して既定値(/)にフォールバックする', (input) => {
     expect(sanitizeRedirectTarget(input)).toBe('/')
   })
