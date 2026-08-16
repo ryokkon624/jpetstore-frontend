@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // #4 AC1〜AC5・[L2]・AC-neg1: カート表示・数量更新・削除。公開ルート(requiresAuthなし・D2)。
 // 未ログイン=localStorage(クライアント状態)・ログイン中=サーバーカートをそれぞれstoreが解決する。
-import { onMounted, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRoute } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import CatalogBreadcrumb from '@/components/catalog/CatalogBreadcrumb.vue'
 import StockBadge from '@/components/catalog/StockBadge.vue'
@@ -11,8 +11,14 @@ import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 
 const { t, n, tm } = useI18n()
+const route = useRoute()
 const authStore = useAuthStore()
 const cartStore = useCartStore()
+
+// #7 AC-neg1: 空カートで/checkoutへ進もうとするとCheckoutViewが/cart?reason=empty-checkoutへ
+// replaceする。ここではそのクエリを読んで正規化エラー(as-is failure文言相当)を表示するだけに留める
+// (別画面を新設しない・計画フェーズ確定C)。
+const showCheckoutEmptyError = computed(() => route.query.reason === 'empty-checkout')
 
 /** 更新操作中の行のitemId(連打防止・簡易ローディング表示)。 */
 const pendingItemId = ref<string | null>(null)
@@ -70,6 +76,10 @@ function addToCartErrorMessage(reason: string): string {
       />
 
       <h1 class="cart-view__title">{{ t('cart.title') }}</h1>
+
+      <p v-if="showCheckoutEmptyError" class="jps-alert jps-alert-danger" role="alert">
+        {{ t('cart.checkoutEmptyError') }}
+      </p>
 
       <p v-if="actionErrorReason" class="cart-view__action-error" role="alert">
         {{ addToCartErrorMessage(actionErrorReason) }}
@@ -155,10 +165,9 @@ function addToCartErrorMessage(reason: string): string {
             {{ t('cart.subtotalLabel') }}:
             <span class="jps-price jps-price-lg">{{ formatPrice(cartStore.subtotal) }}</span>
           </p>
-          <button type="button" class="jps-btn jps-btn-primary jps-btn-lg" disabled>
+          <RouterLink to="/checkout" class="jps-btn jps-btn-primary jps-btn-lg">
             {{ t('cart.checkout') }}
-            <span class="cart-view__coming-soon">({{ t('cart.checkoutComingSoon') }})</span>
-          </button>
+          </RouterLink>
         </div>
       </template>
     </div>
@@ -215,11 +224,5 @@ function addToCartErrorMessage(reason: string): string {
 .cart-view__subtotal {
   font-size: 1rem;
   color: var(--jps-text-heading);
-}
-
-.cart-view__coming-soon {
-  font-weight: 400;
-  font-size: 0.75rem;
-  opacity: 0.8;
 }
 </style>

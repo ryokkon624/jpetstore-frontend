@@ -109,7 +109,6 @@ export default {
     },
     subtotalLabel: 'Subtotal',
     checkout: 'Proceed to Checkout',
-    checkoutComingSoon: 'Coming soon',
     remove: 'Remove',
     exceedsStockWarning:
       'Stock has changed since this item was added; the quantity may exceed availability.',
@@ -127,6 +126,52 @@ export default {
       EXCEEDS_STOCK: 'The requested quantity exceeds the available stock.',
       INVALID_QUANTITY: 'Please enter a valid quantity.',
       default: 'Could not update your cart. Please try again.',
+    },
+    // #7 AC-neg1: 空カートでチェックアウトに進もうとした場合の正規化エラー(as-is failure文言相当)。
+    checkoutEmptyError: 'An order could not be created because a cart could not be found.',
+  },
+  checkout: {
+    breadcrumb: 'Checkout',
+    steps: {
+      cart: 'Cart',
+      address: 'Address',
+      confirm: 'Confirm',
+    },
+    cartStep: {
+      title: 'Review Your Cart',
+      continue: 'Continue to Address',
+    },
+    addressStep: {
+      title: 'Shipping & Billing Address',
+      billingTitle: 'Billing Address',
+      shippingTitle: 'Shipping Address',
+      useSeparateShipping: 'Ship to a different address',
+      back: 'Back to Cart',
+      continue: 'Continue to Confirmation',
+      fields: {
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        email: 'Email',
+        phone: 'Phone',
+        address1: 'Address',
+        address2: 'Address 2',
+        city: 'City',
+        state: 'State',
+        postalCode: 'Postal Code',
+        country: 'Country',
+      },
+    },
+    confirmStep: {
+      title: 'Review & Confirm',
+      billingTitle: 'Billing Address',
+      shippingTitle: 'Shipping Address',
+      paymentTitle: 'Payment',
+      // AC3: カード入力欄は置かず明示プレースホルダのみ表示する(F3.6承認済)。
+      paymentPlaceholder: 'Payment details will be added in a future update.',
+      back: 'Back to Address',
+      placeOrder: 'Place Order',
+      // #7 計画フェーズ確定②: 確定前段まで。送信(POST /api/orders)は#8で配線する。
+      placeOrderComingSoon: 'Coming soon',
     },
   },
 } as const
