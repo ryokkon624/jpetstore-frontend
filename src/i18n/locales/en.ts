@@ -15,6 +15,10 @@ export default {
         signOut: 'Sign Out',
         greeting: 'Hi, {username}',
       },
+      search: {
+        label: 'Search products',
+        placeholder: 'Search products…',
+      },
     },
   },
   home: {
@@ -71,6 +75,16 @@ export default {
     error: {
       title: 'Something went wrong',
       desc: 'We could not load this page. Please try again later.',
+    },
+    search: {
+      title: 'Search Results',
+      resultsFor: 'Results for "{keyword}"',
+      categoryFilter: {
+        label: 'Category',
+        all: 'All Categories',
+      },
+      emptyKeyword: 'Please enter a keyword to search.',
+      noResults: 'No products found for "{keyword}".',
     },
   },
   auth: {

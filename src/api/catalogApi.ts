@@ -144,3 +144,28 @@ export async function fetchItem(itemId: string): Promise<ItemDetail> {
   const dto = await request<ItemDetailDto>(`/api/items/${encodeURIComponent(itemId)}`)
   return toItemDetail(dto)
 }
+
+/**
+ * 商品検索(#2 AC1/AC3・ID-29)。keywordは空でもbackend側で500やtraceを出さず空結果へ正規化されるが、
+ * 空ガード(AC2)自体はstore側で行いここには到達させない。categoryIdは任意(指定時はその配下に限定)。
+ */
+export async function searchProducts(
+  keyword: string,
+  categoryId?: string,
+  page?: number,
+  size?: number,
+): Promise<PageResult<Product>> {
+  const params = new URLSearchParams()
+  params.set('keyword', keyword)
+  if (categoryId !== undefined) {
+    params.set('categoryId', categoryId)
+  }
+  if (page !== undefined) {
+    params.set('page', String(page))
+  }
+  if (size !== undefined) {
+    params.set('size', String(size))
+  }
+  const dto = await request<PageDto<ProductDto>>(`/api/products/search?${params.toString()}`)
+  return toPageResult(dto, toProduct)
+}
