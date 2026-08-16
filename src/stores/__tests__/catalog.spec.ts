@@ -148,6 +148,75 @@ describe('useCatalogStore', () => {
     expect(store.isLoadingItems).toBe(false)
   })
 
+  it('#2 AC1/[L2]: searchProductsが成功するとsearchResultsにセットされる(keyword/categoryId/page/sizeをAPIへ渡す)', async () => {
+    mockedCatalogApi.searchProducts.mockResolvedValue(PRODUCTS_PAGE)
+    const store = useCatalogStore()
+
+    await store.searchProducts('dog', 'DOGS', 1, 12)
+
+    expect(store.searchResults).toEqual(PRODUCTS_PAGE)
+    expect(mockedCatalogApi.searchProducts).toHaveBeenCalledWith('dog', 'DOGS', 1, 12)
+    expect(store.hasError).toBe(false)
+    expect(store.searchKeywordMissing).toBe(false)
+    expect(store.isLoadingSearch).toBe(false)
+  })
+
+  it('#2 AC1: categoryId省略でも検索できる(undefinedのままAPIへ渡す)', async () => {
+    mockedCatalogApi.searchProducts.mockResolvedValue(PRODUCTS_PAGE)
+    const store = useCatalogStore()
+
+    await store.searchProducts('dog')
+
+    expect(mockedCatalogApi.searchProducts).toHaveBeenCalledWith(
+      'dog',
+      undefined,
+      undefined,
+      undefined,
+    )
+  })
+
+  it('#2 AC2: 空keywordはAPIを呼ばずsearchKeywordMissing=trueになり空結果を保持する(500/traceを出さない)', async () => {
+    const store = useCatalogStore()
+
+    await store.searchProducts('')
+
+    expect(mockedCatalogApi.searchProducts).not.toHaveBeenCalled()
+    expect(store.searchKeywordMissing).toBe(true)
+    expect(store.searchResults.content).toEqual([])
+    expect(store.hasError).toBe(false)
+  })
+
+  it('#2 AC2: 空白のみのkeywordもAPIを呼ばずsearchKeywordMissing=trueになる', async () => {
+    const store = useCatalogStore()
+
+    await store.searchProducts('   ')
+
+    expect(mockedCatalogApi.searchProducts).not.toHaveBeenCalled()
+    expect(store.searchKeywordMissing).toBe(true)
+  })
+
+  it('#2 AC-neg2(#3依存): searchProductsが失敗する(型不一致400・stale頁送り相当)とhasError=trueになり例外は伝播しない', async () => {
+    mockedCatalogApi.searchProducts.mockRejectedValue(new HttpError(400, 'Bad Request'))
+    const store = useCatalogStore()
+
+    await expect(store.searchProducts('dog', undefined, 9999)).resolves.toBeUndefined()
+
+    expect(store.hasError).toBe(true)
+    expect(store.isLoadingSearch).toBe(false)
+  })
+
+  it('#2: 新しい検索開始時に直前のsearchKeywordMissing/hasErrorはリセットされる', async () => {
+    const store = useCatalogStore()
+    await store.searchProducts('')
+    expect(store.searchKeywordMissing).toBe(true)
+
+    mockedCatalogApi.searchProducts.mockResolvedValueOnce(PRODUCTS_PAGE)
+    await store.searchProducts('dog')
+
+    expect(store.searchKeywordMissing).toBe(false)
+    expect(store.searchResults).toEqual(PRODUCTS_PAGE)
+  })
+
   it('新しいfetch開始時に直前のhasErrorはリセットされる', async () => {
     mockedCatalogApi.fetchItem.mockRejectedValueOnce(new HttpError(404, 'Not Found'))
     const store = useCatalogStore()

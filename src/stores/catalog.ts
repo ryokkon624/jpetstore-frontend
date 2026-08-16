@@ -30,6 +30,12 @@ export const useCatalogStore = defineStore('catalog', {
     currentItem: null as ItemDetail | null,
     isLoadingItem: false,
 
+    /** #2: 商品検索(AC1・カテゴリフィルタ任意)。 */
+    searchResults: emptyPage<Product>(),
+    isLoadingSearch: false,
+    /** #2 AC2: 空/空白keywordでsearchProductsを呼ぶとAPIを呼ばずtrueになる(500やtraceを出さない)。 */
+    searchKeywordMissing: false,
+
     hasError: false,
   }),
 
@@ -94,6 +100,34 @@ export const useCatalogStore = defineStore('catalog', {
         this.hasError = true
       } finally {
         this.isLoadingItem = false
+      }
+    },
+
+    /**
+     * 商品検索(#2 AC1/AC3・ID-29)。空/空白keywordはAPIを呼ばず{@link searchKeywordMissing}を
+     * trueにするだけで済ませる(AC2・500やtraceを出さない)。categoryIdは任意(指定時はその配下に限定)。
+     */
+    async searchProducts(
+      keyword: string,
+      categoryId?: string,
+      page?: number,
+      size?: number,
+    ): Promise<void> {
+      this.hasError = false
+      const trimmedKeyword = keyword.trim()
+      if (trimmedKeyword === '') {
+        this.searchKeywordMissing = true
+        this.searchResults = emptyPage<Product>()
+        return
+      }
+      this.searchKeywordMissing = false
+      this.isLoadingSearch = true
+      try {
+        this.searchResults = await catalogApi.searchProducts(trimmedKeyword, categoryId, page, size)
+      } catch {
+        this.hasError = true
+      } finally {
+        this.isLoadingSearch = false
       }
     },
   },

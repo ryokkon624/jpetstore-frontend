@@ -5,6 +5,7 @@ import CatalogView from '@/views/catalog/CatalogView.vue'
 import ProductListView from '@/views/catalog/ProductListView.vue'
 import ItemListView from '@/views/catalog/ItemListView.vue'
 import ItemDetailView from '@/views/catalog/ItemDetailView.vue'
+import SearchResultView from '@/views/catalog/SearchResultView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 // AC8: meta.requiresAuth を持つルートは createAuthGuard() の対象になる。
@@ -53,6 +54,13 @@ const routes: RouteRecordRaw[] = [
     name: 'catalog-item',
     component: ItemDetailView,
     meta: { title: 'JPetStore - Catalog' },
+  },
+  // #2 AC1/AC4: 検索も読み取り専用・全公開のため requiresAuth は付けない。
+  {
+    path: '/catalog/search',
+    name: 'catalog-search',
+    component: SearchResultView,
+    meta: { title: 'JPetStore - Search Results' },
   },
 ]
 

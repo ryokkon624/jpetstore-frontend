@@ -46,7 +46,7 @@ describe('SignonView', () => {
 
     await wrapper.find('input[name="username"]').setValue('unknown_or_wrong')
     await wrapper.find('input[name="password"]').setValue('whatever')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('form.signon__form').trigger('submit.prevent')
     await flushPromises()
 
     expect(wrapper.text()).toContain('Invalid username or password.')
@@ -58,7 +58,7 @@ describe('SignonView', () => {
 
     await wrapper.find('input[name="username"]').setValue('j2ee')
     await wrapper.find('input[name="password"]').setValue('correct-password')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('form.signon__form').trigger('submit.prevent')
     await flushPromises()
 
     expect(router.currentRoute.value.fullPath).toBe('/account/orders')
@@ -70,7 +70,7 @@ describe('SignonView', () => {
 
     await wrapper.find('input[name="username"]').setValue('j2ee')
     await wrapper.find('input[name="password"]').setValue('correct-password')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('form.signon__form').trigger('submit.prevent')
     await flushPromises()
 
     expect(router.currentRoute.value.fullPath).toBe('/')

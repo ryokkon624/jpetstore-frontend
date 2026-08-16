@@ -1,17 +1,27 @@
 <script setup lang="ts">
-// one-system 共通ヘッダー（AC2）。ロゴ・主要ナビ・認証状態に応じたサインオン/サインオフを表示する。
-// カタログ/カートは各ドメイン Story（E1/E2）で実ルートに接続するまでは仮リンクのまま（土台規律）。
-import { RouterLink } from 'vue-router'
+// one-system 共通ヘッダー（AC2）。ロゴ・検索バー・主要ナビ・認証状態に応じたサインオン/サインオフを表示する。
+// カートは各ドメイン Story（E2）で実ルートに接続するまでは仮リンクのまま（土台規律）。
+import { ref } from 'vue'
+import { RouterLink, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import logoUrl from '@/assets/logo.svg'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const router = useRouter()
 
 // AC5: 状態変更(サインオフ)は明示ボタン+CSRF経由のPOSTで行う(GETリンクで確定しない)。
 async function handleSignOff() {
   await authStore.signoff()
+}
+
+// #2 AC1: ヘッダ検索バー。空/空白keywordのガード自体はSearchResultView側(store)が担うため、
+// ここでは常に検索結果画面へ遷移させるだけの薄いラッパーに留める。
+const searchKeyword = ref('')
+
+function handleSearchSubmit() {
+  router.push({ name: 'catalog-search', query: { keyword: searchKeyword.value } })
 }
 </script>
 
@@ -21,6 +31,16 @@ async function handleSignOff() {
       <RouterLink to="/" class="jps-logo">
         <img :src="logoUrl" :alt="t('app.header.logoAlt')" class="app-header__logo" />
       </RouterLink>
+
+      <form class="jps-search" role="search" @submit.prevent="handleSearchSubmit">
+        <input
+          v-model="searchKeyword"
+          type="search"
+          name="keyword"
+          :placeholder="t('app.header.search.placeholder')"
+          :aria-label="t('app.header.search.label')"
+        />
+      </form>
 
       <nav class="app-header__nav" :aria-label="t('app.header.navLabel')">
         <RouterLink to="/" class="jps-navlink" active-class="jps-navlink-active">
