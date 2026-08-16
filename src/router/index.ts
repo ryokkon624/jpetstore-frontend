@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import SignonView from '@/views/SignonView.vue'
+import CatalogView from '@/views/catalog/CatalogView.vue'
+import ProductListView from '@/views/catalog/ProductListView.vue'
+import ItemListView from '@/views/catalog/ItemListView.vue'
+import ItemDetailView from '@/views/catalog/ItemDetailView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 // AC8: meta.requiresAuth を持つルートは createAuthGuard() の対象になる。
@@ -24,6 +28,31 @@ const routes: RouteRecordRaw[] = [
     name: 'signon',
     component: SignonView,
     meta: { title: 'JPetStore - Sign In' },
+  },
+  // #1 AC1/AC4: カタログは読み取り専用・全公開のため requiresAuth は付けない。
+  {
+    path: '/catalog',
+    name: 'catalog',
+    component: CatalogView,
+    meta: { title: 'JPetStore - Catalog' },
+  },
+  {
+    path: '/catalog/categories/:categoryId',
+    name: 'catalog-category',
+    component: ProductListView,
+    meta: { title: 'JPetStore - Catalog' },
+  },
+  {
+    path: '/catalog/products/:productId',
+    name: 'catalog-product',
+    component: ItemListView,
+    meta: { title: 'JPetStore - Catalog' },
+  },
+  {
+    path: '/catalog/items/:itemId',
+    name: 'catalog-item',
+    component: ItemDetailView,
+    meta: { title: 'JPetStore - Catalog' },
   },
 ]
 

@@ -26,7 +26,9 @@ async function handleSignOff() {
         <RouterLink to="/" class="jps-navlink" active-class="jps-navlink-active">
           {{ t('app.header.nav.home') }}
         </RouterLink>
-        <a class="jps-navlink" href="#">{{ t('app.header.nav.catalog') }}</a>
+        <RouterLink to="/catalog" class="jps-navlink" active-class="jps-navlink-active">
+          {{ t('app.header.nav.catalog') }}
+        </RouterLink>
         <a class="jps-navlink" href="#">{{ t('app.header.nav.cart') }}</a>
       </nav>
 
