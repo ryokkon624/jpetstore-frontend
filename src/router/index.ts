@@ -7,11 +7,9 @@ import ItemListView from '@/views/catalog/ItemListView.vue'
 import ItemDetailView from '@/views/catalog/ItemDetailView.vue'
 import SearchResultView from '@/views/catalog/SearchResultView.vue'
 import CartView from '@/views/CartView.vue'
+import CheckoutView from '@/views/checkout/CheckoutView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
-// AC8: meta.requiresAuth を持つルートは createAuthGuard() の対象になる。
-// このスプリントでは保護対象のドメイン画面が無いため実際に requiresAuth=true を持つルートは
-// まだ無いが、各ドメイン Story が meta.requiresAuth: true を付けるだけで保護ルートに接続できる。
 declare module 'vue-router' {
   interface RouteMeta {
     requiresAuth?: boolean
@@ -70,6 +68,14 @@ const routes: RouteRecordRaw[] = [
     name: 'cart',
     component: CartView,
     meta: { title: 'JPetStore - Your Cart' },
+  },
+  // #7 AC2: 単一ルート＋内部3ステップ(カート確認/住所入力/内容確認)。認証必須
+  // (既達authGuard/redirectValidatorが未認証→サインオン誘導→復帰を処理する。新規配線ゼロ)。
+  {
+    path: '/checkout',
+    name: 'checkout',
+    component: CheckoutView,
+    meta: { title: 'JPetStore - Checkout', requiresAuth: true },
   },
 ]
 

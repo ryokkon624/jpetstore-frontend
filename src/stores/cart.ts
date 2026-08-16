@@ -78,6 +78,11 @@ export const useCartStore = defineStore('cart', {
     subtotal(): number {
       return this.displayItems.reduce((sum: number, item: CartItem) => sum + item.lineTotal, 0)
     },
+
+    /** #7 AC-neg1: チェックアウト進入可否の判定に使う(空カートでnewOrderFormへ進めない)。 */
+    isEmpty(): boolean {
+      return this.displayItems.length === 0
+    },
   },
 
   actions: {

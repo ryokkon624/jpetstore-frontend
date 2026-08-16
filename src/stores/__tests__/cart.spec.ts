@@ -165,6 +165,18 @@ describe('useCartStore', () => {
       ])
       expect(store.subtotal).toBe(33)
     })
+
+    it('#7 AC-neg1: isEmptyはlocalLines解決済みのdisplayItemsが空ならtrue', async () => {
+      mockedCartStorage.loadCart.mockReturnValue([{ itemId: 'EST-1', quantity: 2 }])
+      mockedCatalogApi.fetchItem.mockResolvedValue(ITEM_DETAIL)
+      const store = useCartStore()
+
+      expect(store.isEmpty).toBe(true)
+
+      await store.refreshLocalItemDetails()
+
+      expect(store.isEmpty).toBe(false)
+    })
   })
 
   describe('ログイン済み(サーバーカート)', () => {
@@ -227,6 +239,17 @@ describe('useCartStore', () => {
       await store.fetchCart()
 
       expect(store.itemCount).toBe(2)
+    })
+
+    it('#7 AC-neg1: isEmptyはdisplayItemsが空ならtrue、行があればfalseになる', async () => {
+      const store = useCartStore()
+
+      expect(store.isEmpty).toBe(true)
+
+      mockedCartApi.fetchCart.mockResolvedValue(SERVER_CART)
+      await store.fetchCart()
+
+      expect(store.isEmpty).toBe(false)
     })
   })
 
