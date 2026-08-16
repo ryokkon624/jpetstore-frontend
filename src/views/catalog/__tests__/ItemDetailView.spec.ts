@@ -5,9 +5,12 @@ import { createRouter, createMemoryHistory } from 'vue-router'
 import ItemDetailView from '@/views/catalog/ItemDetailView.vue'
 import i18n from '@/i18n'
 import * as catalogApi from '@/api/catalogApi'
+import * as cartApi from '@/api/cartApi'
 
 vi.mock('@/api/catalogApi')
+vi.mock('@/api/cartApi')
 const mockedCatalogApi = vi.mocked(catalogApi)
+const mockedCartApi = vi.mocked(cartApi)
 
 async function mountItemDetailView(itemId = 'EST-3') {
   const router = createRouter({
@@ -93,7 +96,7 @@ describe('ItemDetailView', () => {
     expect(wrapper.text()).toContain('Something went wrong')
   })
 
-  it('カート追加ボタンは非活性プレースホルダである(#1論点4・AC4の状態変更なしを維持)', async () => {
+  it('#4 AC5: 在庫あり(IN_STOCK)の場合、カート追加ボタンは活性である', async () => {
     mockedCatalogApi.fetchItem.mockResolvedValue({
       itemId: 'EST-22',
       productId: 'K9-RT-02',
@@ -106,6 +109,61 @@ describe('ItemDetailView', () => {
     const { wrapper } = await mountItemDetailView('EST-22')
 
     const button = wrapper.find('button')
+    expect(button.attributes('disabled')).toBeUndefined()
+  })
+
+  it('#4 AC5: 在庫切れ(OUT_STOCK)の場合、カート追加ボタンは非活性である', async () => {
+    mockedCatalogApi.fetchItem.mockResolvedValue({
+      itemId: 'EST-3',
+      productId: 'FI-SW-02',
+      productName: 'Tiger Shark',
+      productDescription: 'Salt Water fish',
+      attribute1: 'Toothless',
+      listPrice: 18.5,
+      stockStatus: 'OUT_STOCK',
+    })
+    const { wrapper } = await mountItemDetailView('EST-3')
+
+    const button = wrapper.find('button')
     expect(button.attributes('disabled')).toBeDefined()
+  })
+
+  it('#4 AC1: カート追加ボタンをクリックすると未ログイン(localStorage)カートに追加される', async () => {
+    mockedCatalogApi.fetchItem.mockResolvedValue({
+      itemId: 'EST-22',
+      productId: 'K9-RT-02',
+      productName: 'Labrador Retriever',
+      productDescription: 'Great hunting dog',
+      attribute1: 'Adult Male',
+      listPrice: 135.5,
+      stockStatus: 'IN_STOCK',
+    })
+    mockedCartApi.checkOrderable.mockResolvedValue({ orderable: true, reason: null })
+    const { wrapper } = await mountItemDetailView('EST-22')
+
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+
+    expect(mockedCartApi.checkOrderable).toHaveBeenCalledWith('EST-22', 1)
+    expect(wrapper.text()).toContain('Added to your cart.')
+  })
+
+  it('#4 AC5/AC-neg1: orderable EPがfalseを返す場合、追加は拒否されエラーメッセージを表示する', async () => {
+    mockedCatalogApi.fetchItem.mockResolvedValue({
+      itemId: 'EST-2',
+      productId: 'FI-SW-01',
+      productName: 'Angelfish',
+      productDescription: 'Salt Water fish',
+      attribute1: 'Small',
+      listPrice: 16.5,
+      stockStatus: 'LOW_STOCK',
+    })
+    mockedCartApi.checkOrderable.mockResolvedValue({ orderable: false, reason: 'EXCEEDS_STOCK' })
+    const { wrapper } = await mountItemDetailView('EST-2')
+
+    await wrapper.find('button').trigger('click')
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('exceeds the available stock')
   })
 })

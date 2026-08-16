@@ -2,29 +2,58 @@
 // #1 AC1/AC3/AC5/AC-neg1: アイテム詳細。在庫バッジ(qty非露出)・plaintext description。
 // AC-neg1(SBD-18): productDescriptionはテキスト補間({{ }})のみで描画する。v-html/innerHTMLは
 // 一切使わない(レガシーのescapeXml="false"を継承しない・格納XSS面を再現しない)。
-// #1論点4: カート追加は非活性プレースホルダ(handler/store/API無し=AC4のGET only維持。実挙動は#4)。
-import { computed, watch } from 'vue'
+// #4: カート追加を実装する。在庫切れ(OUT_STOCK)のみ非活性。匿名は在庫上限をorderable EP経由で
+// server-sideに検証する(cartStore.addItemが認証状態に応じて自動的に振り分ける)。
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { RouterLink, useRoute } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import StockBadge from '@/components/catalog/StockBadge.vue'
 import CatalogBreadcrumb from '@/components/catalog/CatalogBreadcrumb.vue'
 import { useCatalogStore } from '@/stores/catalog'
+import { useCartStore } from '@/stores/cart'
 import { resolveCatalogImage } from '@/utils/catalogImage'
 
-const { t, n } = useI18n()
+const { t, n, tm } = useI18n()
 const route = useRoute()
 const catalogStore = useCatalogStore()
+const cartStore = useCartStore()
 
 const itemId = computed(() => String(route.params.itemId))
+const isAddingToCart = ref(false)
+const addToCartErrorReason = ref<string | null>(null)
+const addToCartSucceeded = ref(false)
 
 function formatPrice(price: number): string {
   return n(price, { style: 'currency', currency: 'USD' })
 }
 
+async function handleAddToCart() {
+  addToCartErrorReason.value = null
+  addToCartSucceeded.value = false
+  isAddingToCart.value = true
+  try {
+    const result = await cartStore.addItem(itemId.value, 1)
+    if (result.success) {
+      addToCartSucceeded.value = true
+    } else {
+      addToCartErrorReason.value = result.reason ?? 'default'
+    }
+  } finally {
+    isAddingToCart.value = false
+  }
+}
+
+function addToCartErrorMessage(reason: string): string {
+  const messages = tm('cart.addError') as Record<string, string>
+  return messages[reason] ?? messages.default ?? ''
+}
+
 watch(
   itemId,
   (id) => {
+    addToCartErrorReason.value = null
+    addToCartSucceeded.value = false
     catalogStore.fetchItemDetail(id)
   },
   { immediate: true },
@@ -86,12 +115,21 @@ watch(
             {{ formatPrice(catalogStore.currentItem.listPrice) }}
           </p>
 
-          <button type="button" class="jps-btn jps-btn-primary jps-btn-lg" disabled>
+          <button
+            type="button"
+            class="jps-btn jps-btn-primary jps-btn-lg"
+            :disabled="catalogStore.currentItem.stockStatus === 'OUT_STOCK' || isAddingToCart"
+            @click="handleAddToCart"
+          >
             {{ t('catalog.item.addToCart') }}
-            <span class="item-detail-view__coming-soon"
-              >({{ t('catalog.item.addToCartComingSoon') }})</span
-            >
           </button>
+
+          <p v-if="addToCartSucceeded" class="item-detail-view__add-success" role="status">
+            {{ t('catalog.item.addedToCart') }}
+          </p>
+          <p v-if="addToCartErrorReason" class="item-detail-view__add-error" role="alert">
+            {{ addToCartErrorMessage(addToCartErrorReason) }}
+          </p>
         </div>
       </div>
     </div>
@@ -145,10 +183,14 @@ watch(
   line-height: 1.9;
 }
 
-.item-detail-view__coming-soon {
-  font-weight: 400;
-  font-size: 0.75rem;
-  opacity: 0.8;
+.item-detail-view__add-success {
+  color: var(--jps-primary-text);
+  font-size: 0.875rem;
+}
+
+.item-detail-view__add-error {
+  color: var(--jps-danger-text);
+  font-size: 0.875rem;
 }
 
 .item-detail-view__skeleton {

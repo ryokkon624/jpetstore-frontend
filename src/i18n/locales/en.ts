@@ -48,7 +48,7 @@ export default {
     },
     item: {
       addToCart: 'Add to Cart',
-      addToCartComingSoon: 'Coming soon',
+      addedToCart: 'Added to your cart.',
     },
     table: {
       itemId: 'Item ID',
@@ -95,6 +95,38 @@ export default {
       submit: 'Sign In',
       submitting: 'Signing in…',
       error: 'Invalid username or password.',
+    },
+  },
+  cart: {
+    breadcrumb: 'Cart',
+    title: 'Your Cart',
+    table: {
+      item: 'Item',
+      price: 'Price',
+      quantity: 'Quantity',
+      subtotal: 'Subtotal',
+      remove: 'Remove',
+    },
+    subtotalLabel: 'Subtotal',
+    checkout: 'Proceed to Checkout',
+    checkoutComingSoon: 'Coming soon',
+    remove: 'Remove',
+    exceedsStockWarning:
+      'Stock has changed since this item was added; the quantity may exceed availability.',
+    empty: {
+      title: 'Your cart is empty',
+      desc: 'Browse the catalog to find something for your pet.',
+      browseCatalog: 'Browse Catalog',
+    },
+    error: {
+      title: 'Something went wrong',
+      desc: 'We could not load your cart. Please try again later.',
+    },
+    addError: {
+      OUT_OF_STOCK: 'This item is currently out of stock.',
+      EXCEEDS_STOCK: 'The requested quantity exceeds the available stock.',
+      INVALID_QUANTITY: 'Please enter a valid quantity.',
+      default: 'Could not update your cart. Please try again.',
     },
   },
 } as const

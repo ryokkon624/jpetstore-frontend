@@ -1,14 +1,16 @@
 <script setup lang="ts">
 // one-system 共通ヘッダー（AC2）。ロゴ・検索バー・主要ナビ・認証状態に応じたサインオン/サインオフを表示する。
-// カートは各ドメイン Story（E2）で実ルートに接続するまでは仮リンクのまま（土台規律）。
+// #4: カートは実ルート(/cart)に接続し、件数バッジ(jps-cart-count)を表示する。
 import { ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { useCartStore } from '@/stores/cart'
 import logoUrl from '@/assets/logo.svg'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
+const cartStore = useCartStore()
 const router = useRouter()
 
 // AC5: 状態変更(サインオフ)は明示ボタン+CSRF経由のPOSTで行う(GETリンクで確定しない)。
@@ -49,7 +51,12 @@ function handleSearchSubmit() {
         <RouterLink to="/catalog" class="jps-navlink" active-class="jps-navlink-active">
           {{ t('app.header.nav.catalog') }}
         </RouterLink>
-        <a class="jps-navlink" href="#">{{ t('app.header.nav.cart') }}</a>
+        <RouterLink to="/cart" class="jps-navlink" active-class="jps-navlink-active">
+          {{ t('app.header.nav.cart') }}
+          <span v-if="cartStore.itemCount > 0" class="jps-cart-count">{{
+            cartStore.itemCount
+          }}</span>
+        </RouterLink>
       </nav>
 
       <div class="app-header__account">
