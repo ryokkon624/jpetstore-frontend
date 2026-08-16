@@ -126,6 +126,28 @@ describe('useCatalogStore', () => {
     expect(store.currentItem).toBeNull()
   })
 
+  it('#3 AC-neg2: fetchCategoryProductsが型不一致(400・stale頁送り相当)で失敗してもhasError=trueになり例外は伝播しない', async () => {
+    mockedCatalogApi.fetchCategory.mockResolvedValue(CATEGORY)
+    mockedCatalogApi.fetchProductsByCategory.mockRejectedValue(new HttpError(400, 'Bad Request'))
+    const store = useCatalogStore()
+
+    await expect(store.fetchCategoryProducts('DOGS', 9999)).resolves.toBeUndefined()
+
+    expect(store.hasError).toBe(true)
+    expect(store.isLoadingProducts).toBe(false)
+  })
+
+  it('#3 AC-neg2: fetchProductItemsが型不一致(400・stale頁送り相当)で失敗してもhasError=trueになり例外は伝播しない', async () => {
+    mockedCatalogApi.fetchProduct.mockResolvedValue(PRODUCT)
+    mockedCatalogApi.fetchItemsByProduct.mockRejectedValue(new HttpError(400, 'Bad Request'))
+    const store = useCatalogStore()
+
+    await expect(store.fetchProductItems('K9-RT-02', 9999)).resolves.toBeUndefined()
+
+    expect(store.hasError).toBe(true)
+    expect(store.isLoadingItems).toBe(false)
+  })
+
   it('新しいfetch開始時に直前のhasErrorはリセットされる', async () => {
     mockedCatalogApi.fetchItem.mockRejectedValueOnce(new HttpError(404, 'Not Found'))
     const store = useCatalogStore()
