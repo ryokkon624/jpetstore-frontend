@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import SignonView from '@/views/SignonView.vue'
+import RegisterView from '@/views/RegisterView.vue'
 import CatalogView from '@/views/catalog/CatalogView.vue'
 import ProductListView from '@/views/catalog/ProductListView.vue'
 import ItemListView from '@/views/catalog/ItemListView.vue'
@@ -11,6 +12,7 @@ import CheckoutView from '@/views/checkout/CheckoutView.vue'
 import CheckoutCompleteView from '@/views/checkout/CheckoutCompleteView.vue'
 import OrderHistoryView from '@/views/order/OrderHistoryView.vue'
 import OrderDetailView from '@/views/order/OrderDetailView.vue'
+import AccountEditView from '@/views/AccountEditView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 declare module 'vue-router' {
@@ -31,6 +33,13 @@ const routes: RouteRecordRaw[] = [
     name: 'signon',
     component: SignonView,
     meta: { title: 'JPetStore - Sign In' },
+  },
+  // #13 AC1: 未認証(guest)でアクセス可能(requiresAuthなし。signonと同じ扱い)。
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView,
+    meta: { title: 'JPetStore - Create Account' },
   },
   // #1 AC1/AC4: カタログは読み取り専用・全公開のため requiresAuth は付けない。
   {
@@ -100,6 +109,13 @@ const routes: RouteRecordRaw[] = [
     name: 'order-detail',
     component: OrderDetailView,
     meta: { title: 'JPetStore - Order Detail', requiresAuth: true },
+  },
+  // #14 AC1: アカウント/プロフィール編集(本人固定)。認証必須。
+  {
+    path: '/account',
+    name: 'account-edit',
+    component: AccountEditView,
+    meta: { title: 'JPetStore - Account Settings', requiresAuth: true },
   },
 ]
 

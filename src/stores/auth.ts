@@ -1,6 +1,22 @@
 import { defineStore } from 'pinia'
 import * as authApi from '@/api/authApi'
+import * as accountApi from '@/api/accountApi'
+import { HttpError } from '@/api/httpClient'
 import type { AuthenticatedUser } from '@/domain/authUser'
+import type { RegisterPayload } from '@/domain/account'
+
+/** #13 AC1/AC3/AC4: 登録失敗の分類（HTTPステータス起点。`order.ts`のPlaceOrderErrorReasonと同じ設計）。 */
+export type RegisterErrorReason =
+  'USERNAME_TAKEN' | 'RATE_LIMITED' | 'PASSWORD_MISMATCH' | 'default'
+
+function toRegisterErrorReason(error: unknown): RegisterErrorReason {
+  if (error instanceof HttpError) {
+    if (error.status === 409) return 'USERNAME_TAKEN'
+    if (error.status === 429) return 'RATE_LIMITED'
+    if (error.status === 400) return 'PASSWORD_MISMATCH'
+  }
+  return 'default'
+}
 
 /**
  * AC5/AC7: 認証状態を保持する Pinia store。
@@ -15,6 +31,9 @@ export const useAuthStore = defineStore('auth', {
     /** AC6: サインオン失敗理由を問わず一律のエラー表示に使うフラグ（未知ユーザー/誤PWを区別しない）。 */
     hasSignonError: false,
     isSigningOn: false,
+    /** #13: 登録の進行中フラグ・失敗理由（signonと異なり、登録は失敗理由ごとに表示を分ける）。 */
+    isRegistering: false,
+    registerError: null as RegisterErrorReason | null,
   }),
 
   getters: {
@@ -53,6 +72,26 @@ export const useAuthStore = defineStore('auth', {
         this.user = await authApi.fetchCurrentUser()
       } catch {
         this.user = null
+      }
+    },
+
+    /**
+     * #13 AC1/AC2: アカウントを登録し、成功すれば自動ログイン済みの{@link AuthenticatedUser}を
+     * userへセットする（backendが照合をスキップしたfresh JWTを既に発行済み）。失敗理由は
+     * {@link registerError}へ分類する（username重複/レート制限/パスワード不一致/その他）。
+     */
+    async register(payload: RegisterPayload): Promise<boolean> {
+      this.isRegistering = true
+      this.registerError = null
+      try {
+        this.user = await accountApi.registerAccount(payload)
+        return true
+      } catch (error) {
+        this.user = null
+        this.registerError = toRegisterErrorReason(error)
+        return false
+      } finally {
+        this.isRegistering = false
       }
     },
   },
