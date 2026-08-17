@@ -128,4 +128,108 @@ describe('useOrderStore', () => {
     expect(store.hasResult).toBe(false)
     expect(store.placeError).toBeNull()
   })
+
+  it('#9: 初期状態はhistory=空Page・isLoadingHistory=falseになる', () => {
+    const store = useOrderStore()
+
+    expect(store.history).toEqual({
+      content: [],
+      page: 1,
+      size: 12,
+      totalElements: 0,
+      totalPages: 0,
+    })
+    expect(store.isLoadingHistory).toBe(false)
+  })
+
+  it('#9 AC1: fetchHistoryが成功するとhistoryにセットされる', async () => {
+    const page = {
+      content: [{ orderId: 3, orderDate: '2026-01-03', totalPrice: 30 }],
+      page: 1,
+      size: 12,
+      totalElements: 1,
+      totalPages: 1,
+    }
+    mockedOrderApi.fetchOrders.mockResolvedValue(page)
+    const store = useOrderStore()
+
+    await store.fetchHistory(1)
+
+    expect(mockedOrderApi.fetchOrders).toHaveBeenCalledWith(1)
+    expect(store.history).toEqual(page)
+    expect(store.isLoadingHistory).toBe(false)
+  })
+
+  it('#9: fetchHistoryが失敗すると空Pageのままになる(例外は伝播しない)', async () => {
+    mockedOrderApi.fetchOrders.mockRejectedValue(new HttpError(401, 'Unauthorized'))
+    const store = useOrderStore()
+
+    await expect(store.fetchHistory()).resolves.toBeUndefined()
+
+    expect(store.history.content).toEqual([])
+    expect(store.isLoadingHistory).toBe(false)
+  })
+
+  it('#10: 初期状態はdetail=null・isLoadingDetail=false・detailUnavailable=falseになる', () => {
+    const store = useOrderStore()
+
+    expect(store.detail).toBeNull()
+    expect(store.isLoadingDetail).toBe(false)
+    expect(store.detailUnavailable).toBe(false)
+  })
+
+  it('#10 AC1/AC2/AC4: fetchDetailが成功するとdetailにセットされる', async () => {
+    const detail = {
+      orderId: 9,
+      orderDate: '2026-01-09',
+      totalPrice: 33,
+      lines: [
+        { itemId: 'EST-1', productName: 'Angelfish', quantity: 2, unitPrice: 16.5, lineTotal: 33 },
+      ],
+    }
+    mockedOrderApi.fetchOrder.mockResolvedValue(detail)
+    const store = useOrderStore()
+
+    await store.fetchDetail(9)
+
+    expect(mockedOrderApi.fetchOrder).toHaveBeenCalledWith(9)
+    expect(store.detail).toEqual(detail)
+    expect(store.detailUnavailable).toBe(false)
+    expect(store.isLoadingDetail).toBe(false)
+  })
+
+  it('#10 AC-neg1(SBD-1): 403(他人の注文)はdetailUnavailable=trueになりdetailはnullのまま', async () => {
+    mockedOrderApi.fetchOrder.mockRejectedValue(new HttpError(403, 'Forbidden'))
+    const store = useOrderStore()
+
+    await store.fetchDetail(9)
+
+    expect(store.detailUnavailable).toBe(true)
+    expect(store.detail).toBeNull()
+    expect(store.isLoadingDetail).toBe(false)
+  })
+
+  it('#10 AC-neg2(SBD-8): 404(不存在)も403と同一のdetailUnavailable=trueになる(区別しない)', async () => {
+    mockedOrderApi.fetchOrder.mockRejectedValue(new HttpError(404, 'Not Found'))
+    const store = useOrderStore()
+
+    await store.fetchDetail(999)
+
+    expect(store.detailUnavailable).toBe(true)
+    expect(store.detail).toBeNull()
+  })
+
+  it('#10: 新しいfetchDetail開始時に直前のdetail/detailUnavailableはリセットされる', async () => {
+    mockedOrderApi.fetchOrder.mockRejectedValueOnce(new HttpError(403, 'Forbidden'))
+    const store = useOrderStore()
+    await store.fetchDetail(9)
+    expect(store.detailUnavailable).toBe(true)
+
+    const detail = { orderId: 10, orderDate: '2026-01-10', totalPrice: 5, lines: [] }
+    mockedOrderApi.fetchOrder.mockResolvedValueOnce(detail)
+    await store.fetchDetail(10)
+
+    expect(store.detailUnavailable).toBe(false)
+    expect(store.detail).toEqual(detail)
+  })
 })

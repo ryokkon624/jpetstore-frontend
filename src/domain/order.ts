@@ -16,3 +16,30 @@ export interface OrderConfirmation {
   orderId: number
   totalPrice: number
 }
+
+/** #9: 注文履歴一覧の1行（明細・住所は持たない）。 */
+export interface OrderSummary {
+  orderId: number
+  orderDate: string
+  totalPrice: number
+}
+
+/**
+ * #10: 注文詳細の明細1行。{@link lineTotal}（`unitPrice * quantity`）はapi層で前段算出する
+ * （backendは行合計を返さないため）。
+ */
+export interface OrderDetailLine {
+  itemId: string
+  productName: string
+  quantity: number
+  unitPrice: number
+  lineTotal: number
+}
+
+/** #10 Sprint14 Q2確定: 明細＋注文合計＋注文日のみ（住所は意図的に持たない）。 */
+export interface OrderDetail {
+  orderId: number
+  orderDate: string
+  totalPrice: number
+  lines: OrderDetailLine[]
+}

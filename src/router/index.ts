@@ -9,6 +9,8 @@ import SearchResultView from '@/views/catalog/SearchResultView.vue'
 import CartView from '@/views/CartView.vue'
 import CheckoutView from '@/views/checkout/CheckoutView.vue'
 import CheckoutCompleteView from '@/views/checkout/CheckoutCompleteView.vue'
+import OrderHistoryView from '@/views/order/OrderHistoryView.vue'
+import OrderDetailView from '@/views/order/OrderDetailView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 declare module 'vue-router' {
@@ -84,6 +86,20 @@ const routes: RouteRecordRaw[] = [
     name: 'checkout-complete',
     component: CheckoutCompleteView,
     meta: { title: 'JPetStore - Order Complete', requiresAuth: true },
+  },
+  // #9 AC3: 注文履歴一覧(本人スコープ)。認証必須(既達authGuard/元URL復帰を無配線再利用)。
+  {
+    path: '/account/orders',
+    name: 'order-history',
+    component: OrderHistoryView,
+    meta: { title: 'JPetStore - Order History', requiresAuth: true },
+  },
+  // #10 AC5: 注文詳細(所有者限定)。認証必須。
+  {
+    path: '/account/orders/:orderId',
+    name: 'order-detail',
+    component: OrderDetailView,
+    meta: { title: 'JPetStore - Order Detail', requiresAuth: true },
   },
 ]
 

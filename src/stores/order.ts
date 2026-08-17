@@ -3,15 +3,31 @@ import * as orderApi from '@/api/orderApi'
 import { HttpError } from '@/api/httpClient'
 import { useCartStore } from '@/stores/cart'
 import { useCheckoutStore } from '@/stores/checkout'
-import type { OrderConfirmation } from '@/domain/order'
+import type { PageResult } from '@/domain/catalog'
+import type { OrderConfirmation, OrderDetail, OrderSummary } from '@/domain/order'
 
 export type PlaceOrderErrorReason = 'INSUFFICIENT_STOCK' | 'default'
+
+function emptyPage<T>(): PageResult<T> {
+  return { content: [], page: 1, size: 12, totalElements: 0, totalPages: 0 }
+}
 
 function initialState() {
   return {
     isPlacing: false,
     placeError: null as PlaceOrderErrorReason | null,
     result: null as OrderConfirmation | null,
+
+    // #9: 注文履歴一覧(本人スコープ・サーバページング)。
+    history: emptyPage<OrderSummary>(),
+    isLoadingHistory: false,
+
+    // #10: 注文詳細(所有者限定)。
+    detail: null as OrderDetail | null,
+    isLoadingDetail: false,
+    // AC-neg1/AC-neg2(SBD-1/SBD-8): 403(非所有)・404相当(不存在)を区別せず統一エラーとして扱う
+    // (存在推測を与えない。Viewは本フラグのみで判定する)。
+    detailUnavailable: false,
   }
 }
 
@@ -59,6 +75,36 @@ export const useOrderStore = defineStore('order', {
 
     reset(): void {
       Object.assign(this, initialState())
+    },
+
+    /** #9 AC1: 認証プリンシパル本人の注文履歴一覧(新しい順)を取得する。失敗しても例外は伝播しない。 */
+    async fetchHistory(page?: number): Promise<void> {
+      this.isLoadingHistory = true
+      try {
+        this.history = await orderApi.fetchOrders(page)
+      } catch {
+        this.history = emptyPage<OrderSummary>()
+      } finally {
+        this.isLoadingHistory = false
+      }
+    },
+
+    /**
+     * #10 AC1〜AC4: 所有者限定の注文詳細を取得する。403(非所有)・不存在相当のいずれも
+     * {@link detailUnavailable}のみで表す(AC-neg1/AC-neg2・区別しない統一エラー)。
+     */
+    async fetchDetail(orderId: number): Promise<void> {
+      this.isLoadingDetail = true
+      this.detailUnavailable = false
+      this.detail = null
+      try {
+        this.detail = await orderApi.fetchOrder(orderId)
+      } catch {
+        this.detail = null
+        this.detailUnavailable = true
+      } finally {
+        this.isLoadingDetail = false
+      }
     },
   },
 })
