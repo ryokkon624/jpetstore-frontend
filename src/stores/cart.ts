@@ -200,6 +200,17 @@ export const useCartStore = defineStore('cart', {
       }
     },
 
+    /**
+     * #8: 注文確定成功後にカートを空へリセットする(サーバー側は既にOrderApplicationServiceが
+     * t_cart_itemを全クリア済み。ここではクライアント側の表示状態とlocalStorageミラーを合わせて
+     * リセットするだけで、追加のAPI呼び出しは行わない)。
+     */
+    clearAfterOrder(): void {
+      this.cart = emptyCart()
+      this.localLines = []
+      clearCart()
+    },
+
     /** App.vueがauthStore.isAuthenticatedの変化を監視して呼ぶ。 */
     async syncOnAuthChange(isAuthenticated: boolean): Promise<void> {
       if (isAuthenticated) {

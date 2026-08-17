@@ -170,8 +170,22 @@ export default {
       paymentPlaceholder: 'Payment details will be added in a future update.',
       back: 'Back to Address',
       placeOrder: 'Place Order',
-      // #7 計画フェーズ確定②: 確定前段まで。送信(POST /api/orders)は#8で配線する。
-      placeOrderComingSoon: 'Coming soon',
+      // #8: 送信中の表示文言。
+      placing: 'Placing your order…',
+      placeOrderError: {
+        // #8 AC2/AC-neg2: 409(在庫不足・同時発注の競合負け)は専用文言、それ以外は一律defaultへ丸める。
+        INSUFFICIENT_STOCK:
+          'One or more items in your order are no longer available in the requested quantity. Please review your cart and try again.',
+        default: 'We could not place your order. Please try again.',
+      },
     },
+  },
+  // #8: 最小の完了画面(注文番号・サーバ再計算合計・サンクスメッセージのみ。明細/商品名は#10)。
+  orderComplete: {
+    title: 'Thank you for your order!',
+    message: 'Your order has been placed successfully.',
+    orderNumberLabel: 'Order number',
+    totalLabel: 'Total',
+    continueShopping: 'Continue Shopping',
   },
 } as const

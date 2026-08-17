@@ -8,6 +8,7 @@ import ItemDetailView from '@/views/catalog/ItemDetailView.vue'
 import SearchResultView from '@/views/catalog/SearchResultView.vue'
 import CartView from '@/views/CartView.vue'
 import CheckoutView from '@/views/checkout/CheckoutView.vue'
+import CheckoutCompleteView from '@/views/checkout/CheckoutCompleteView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 declare module 'vue-router' {
@@ -76,6 +77,13 @@ const routes: RouteRecordRaw[] = [
     name: 'checkout',
     component: CheckoutView,
     meta: { title: 'JPetStore - Checkout', requiresAuth: true },
+  },
+  // #8 計画フェーズ確定②: 最小の完了画面。orderStore.hasResult=falseなら/へredirect(View側で判定)。
+  {
+    path: '/checkout/complete',
+    name: 'checkout-complete',
+    component: CheckoutCompleteView,
+    meta: { title: 'JPetStore - Order Complete', requiresAuth: true },
   },
 ]
 

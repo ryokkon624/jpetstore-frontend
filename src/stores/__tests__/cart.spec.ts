@@ -340,4 +340,28 @@ describe('useCartStore', () => {
       expect(store.localLines).toEqual([{ itemId: 'EST-9', quantity: 1 }])
     })
   })
+
+  describe('clearAfterOrder(#8: 注文確定成功後のカートリセット)', () => {
+    it('サーバーカート(cart)を空へリセットする', async () => {
+      mockedCartApi.fetchCart.mockResolvedValue(SERVER_CART)
+      const store = useCartStore()
+      await store.fetchCart()
+      expect(store.cart).toEqual(SERVER_CART)
+
+      store.clearAfterOrder()
+
+      expect(store.cart).toEqual({ cartId: null, items: [], subtotal: 0 })
+    })
+
+    it('未ログイン用のlocalLinesも空にしlocalStorageをクリアする', () => {
+      mockedCartStorage.loadCart.mockReturnValue([{ itemId: 'EST-1', quantity: 2 }])
+      const store = useCartStore()
+      expect(store.localLines).toEqual([{ itemId: 'EST-1', quantity: 2 }])
+
+      store.clearAfterOrder()
+
+      expect(store.localLines).toEqual([])
+      expect(mockedCartStorage.clearCart).toHaveBeenCalled()
+    })
+  })
 })
