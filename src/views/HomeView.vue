@@ -23,9 +23,9 @@ const { t } = useI18n()
             <RouterLink to="/catalog" class="jps-btn jps-btn-primary jps-btn-lg">
               {{ t('home.hero.browseCatalog') }}
             </RouterLink>
-            <a class="jps-btn jps-btn-secondary jps-btn-lg" href="#">
+            <RouterLink to="/register" class="jps-btn jps-btn-secondary jps-btn-lg">
               {{ t('home.hero.newHere') }}
-            </a>
+            </RouterLink>
           </div>
         </div>
       </section>

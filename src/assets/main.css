@@ -821,7 +821,8 @@ h5,
     color: var(--jps-text-heading);
   }
   .jps-required::after {
-    content: '必須';
+    /* E6(Sprint16): 英語のみ方針(PO決定)に合わせグローバルに英語化(旧'必須'は既存不整合)。 */
+    content: 'Required';
     margin-left: 0.5rem;
     padding: 0.125rem 0.375rem;
     border-radius: var(--jps-radius-sm);

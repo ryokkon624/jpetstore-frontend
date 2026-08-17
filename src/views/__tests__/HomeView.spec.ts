@@ -11,6 +11,7 @@ async function mountHomeView() {
     routes: [
       { path: '/', name: 'home', component: HomeView },
       { path: '/signon', name: 'signon', component: { template: '<div />' } },
+      { path: '/register', name: 'register', component: { template: '<div />' } },
     ],
   })
   router.push('/')

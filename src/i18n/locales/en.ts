@@ -97,6 +97,24 @@ export default {
       error: 'Invalid username or password.',
     },
   },
+  // #13: ユーザー登録画面。langpref/favcategory入力欄は持たない(E5・サーバ既定値/未設定で登録される)。
+  account: {
+    register: {
+      title: 'Create Account',
+      usernameLabel: 'Username',
+      passwordLabel: 'Password',
+      repeatedPasswordLabel: 'Confirm Password',
+      submit: 'Create Account',
+      submitting: 'Creating your account…',
+      error: {
+        // #13 E4: username重複は明示メッセージ(列挙対策はレート制限が担保する前提)。
+        USERNAME_TAKEN: 'That username is already taken. Please choose another.',
+        RATE_LIMITED: 'Too many attempts. Please wait a while and try again.',
+        PASSWORD_MISMATCH: 'Passwords do not match.',
+        default: 'We could not create your account. Please try again.',
+      },
+    },
+  },
   cart: {
     breadcrumb: 'Cart',
     title: 'Your Cart',

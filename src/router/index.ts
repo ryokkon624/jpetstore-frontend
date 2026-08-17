@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import SignonView from '@/views/SignonView.vue'
+import RegisterView from '@/views/RegisterView.vue'
 import CatalogView from '@/views/catalog/CatalogView.vue'
 import ProductListView from '@/views/catalog/ProductListView.vue'
 import ItemListView from '@/views/catalog/ItemListView.vue'
@@ -31,6 +32,13 @@ const routes: RouteRecordRaw[] = [
     name: 'signon',
     component: SignonView,
     meta: { title: 'JPetStore - Sign In' },
+  },
+  // #13 AC1: 未認証(guest)でアクセス可能(requiresAuthなし。signonと同じ扱い)。
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterView,
+    meta: { title: 'JPetStore - Create Account' },
   },
   // #1 AC1/AC4: カタログは読み取り専用・全公開のため requiresAuth は付けない。
   {

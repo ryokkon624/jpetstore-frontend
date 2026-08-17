@@ -2,11 +2,35 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 import * as authApi from '@/api/authApi'
+import * as accountApi from '@/api/accountApi'
 import { HttpError } from '@/api/httpClient'
+import { emptyAddress } from '@/domain/checkout'
+import type { RegisterPayload } from '@/domain/account'
 
 vi.mock('@/api/authApi')
+vi.mock('@/api/accountApi')
 
 const mockedAuthApi = vi.mocked(authApi)
+const mockedAccountApi = vi.mocked(accountApi)
+
+function registerPayload(overrides: Partial<RegisterPayload> = {}): RegisterPayload {
+  return {
+    ...emptyAddress(),
+    username: 'new_user',
+    password: 'correct-horse',
+    repeatedPassword: 'correct-horse',
+    firstName: 'Taro',
+    lastName: 'Yamada',
+    email: 'new_user@example.com',
+    phone: '555-0100',
+    address1: '1 Test St',
+    city: 'Testville',
+    state: 'CA',
+    postalCode: '90000',
+    country: 'USA',
+    ...overrides,
+  }
+}
 
 describe('useAuthStore', () => {
   beforeEach(() => {
@@ -112,5 +136,86 @@ describe('useAuthStore', () => {
 
     expect(localSetItemSpy).not.toHaveBeenCalled()
     localSetItemSpy.mockRestore()
+  })
+
+  describe('register (#13 AC1/AC2)', () => {
+    it('初期状態はregisterErrorがnull・isRegistering=falseである', () => {
+      const store = useAuthStore()
+      expect(store.registerError).toBeNull()
+      expect(store.isRegistering).toBe(false)
+    })
+
+    it('成功するとuserに{username,roles}がセットされisAuthenticated=trueになる(自動ログイン)', async () => {
+      mockedAccountApi.registerAccount.mockResolvedValue({ username: 'new_user', roles: ['USER'] })
+      const store = useAuthStore()
+      const payload = registerPayload()
+
+      const result = await store.register(payload)
+
+      expect(result).toBe(true)
+      expect(store.user).toEqual({ username: 'new_user', roles: ['USER'] })
+      expect(store.isAuthenticated).toBe(true)
+      expect(store.registerError).toBeNull()
+      expect(mockedAccountApi.registerAccount).toHaveBeenCalledWith(payload)
+    })
+
+    it('username重複(409)はregisterError="USERNAME_TAKEN"になりuserはnullのまま', async () => {
+      mockedAccountApi.registerAccount.mockRejectedValue(new HttpError(409, 'Conflict'))
+      const store = useAuthStore()
+
+      const result = await store.register(registerPayload())
+
+      expect(result).toBe(false)
+      expect(store.user).toBeNull()
+      expect(store.registerError).toBe('USERNAME_TAKEN')
+    })
+
+    it('レート制限超過(429)はregisterError="RATE_LIMITED"になる', async () => {
+      mockedAccountApi.registerAccount.mockRejectedValue(new HttpError(429, 'Too Many Requests'))
+      const store = useAuthStore()
+
+      const result = await store.register(registerPayload())
+
+      expect(result).toBe(false)
+      expect(store.registerError).toBe('RATE_LIMITED')
+    })
+
+    it('パスワード不一致等(400)はregisterError="PASSWORD_MISMATCH"になる', async () => {
+      mockedAccountApi.registerAccount.mockRejectedValue(new HttpError(400, 'Bad Request'))
+      const store = useAuthStore()
+
+      const result = await store.register(registerPayload())
+
+      expect(result).toBe(false)
+      expect(store.registerError).toBe('PASSWORD_MISMATCH')
+    })
+
+    it('その他のエラーはregisterError="default"になる', async () => {
+      mockedAccountApi.registerAccount.mockRejectedValue(
+        new HttpError(500, 'Internal Server Error'),
+      )
+      const store = useAuthStore()
+
+      const result = await store.register(registerPayload())
+
+      expect(result).toBe(false)
+      expect(store.registerError).toBe('default')
+    })
+
+    it('直前の失敗後に成功するとregisterErrorはリセットされる', async () => {
+      mockedAccountApi.registerAccount.mockRejectedValueOnce(new HttpError(409, 'Conflict'))
+      const store = useAuthStore()
+      await store.register(registerPayload())
+      expect(store.registerError).toBe('USERNAME_TAKEN')
+
+      mockedAccountApi.registerAccount.mockResolvedValueOnce({
+        username: 'new_user',
+        roles: ['USER'],
+      })
+      await store.register(registerPayload())
+
+      expect(store.registerError).toBeNull()
+      expect(store.isAuthenticated).toBe(true)
+    })
   })
 })
