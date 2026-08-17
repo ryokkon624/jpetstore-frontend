@@ -1,18 +1,29 @@
 <script setup lang="ts">
-// #7 AC1/AC3/計画フェーズ確定②: ウィザード第3ステップ(内容確認)。確定前段まで。
+// #7/#8 AC1/AC3/AC4: ウィザード第3ステップ(内容確認・注文確定)。
 // 支払はカード入力欄を置かず明示プレースホルダのみ(F3.6承認済)。courier/locale入力欄も置かない(PO決定)。
-// 実送信(POST /api/orders)・在庫原子引当・永続化は#8で配線するため、「注文確定」は無効化ボタンのまま
-// (現行CartViewの"Coming soon"と同型のステージング)。
+// 注文確定はorderStore.placeOrder()(POST /api/orders・非冪等・CSRF自動付与)を呼び、
+// 成功時は完了画面(/checkout/complete)へ、失敗時はエラーメッセージを表示する。
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import { useCheckoutStore } from '@/stores/checkout'
+import { useOrderStore } from '@/stores/order'
 
 const { t, n } = useI18n()
+const router = useRouter()
 const cartStore = useCartStore()
 const checkoutStore = useCheckoutStore()
+const orderStore = useOrderStore()
 
 function formatPrice(price: number): string {
   return n(price, { style: 'currency', currency: 'USD' })
+}
+
+async function handlePlaceOrder(): Promise<void> {
+  const success = await orderStore.placeOrder()
+  if (success) {
+    await router.push('/checkout/complete')
+  }
 }
 </script>
 
@@ -87,15 +98,30 @@ function formatPrice(price: number): string {
       </p>
     </section>
 
+    <p v-if="orderStore.placeError" class="jps-alert jps-alert-danger" role="alert">
+      {{ t(`checkout.confirmStep.placeOrderError.${orderStore.placeError}`) }}
+    </p>
+
     <div class="checkout-confirm-step__actions">
-      <button type="button" class="jps-btn jps-btn-secondary" @click="checkoutStore.prev()">
+      <button
+        type="button"
+        class="jps-btn jps-btn-secondary"
+        :disabled="orderStore.isPlacing"
+        @click="checkoutStore.prev()"
+      >
         {{ t('checkout.confirmStep.back') }}
       </button>
-      <button type="button" class="jps-btn jps-btn-primary jps-btn-lg" disabled>
-        {{ t('checkout.confirmStep.placeOrder') }}
-        <span class="checkout-confirm-step__coming-soon">
-          ({{ t('checkout.confirmStep.placeOrderComingSoon') }})
-        </span>
+      <button
+        type="button"
+        class="jps-btn jps-btn-primary jps-btn-lg"
+        :disabled="orderStore.isPlacing"
+        @click="handlePlaceOrder"
+      >
+        {{
+          orderStore.isPlacing
+            ? t('checkout.confirmStep.placing')
+            : t('checkout.confirmStep.placeOrder')
+        }}
       </button>
     </div>
   </div>
@@ -152,11 +178,5 @@ function formatPrice(price: number): string {
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-}
-
-.checkout-confirm-step__coming-soon {
-  font-weight: 400;
-  font-size: 0.75rem;
-  opacity: 0.8;
 }
 </style>
