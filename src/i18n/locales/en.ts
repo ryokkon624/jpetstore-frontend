@@ -188,4 +188,31 @@ export default {
     totalLabel: 'Total',
     continueShopping: 'Continue Shopping',
   },
+  // #9/#10: 注文履歴一覧・注文詳細(本人スコープ・所有者限定)。
+  order: {
+    history: {
+      title: 'Order History',
+      empty: 'You have no past orders.',
+      table: {
+        orderId: 'Order #',
+        date: 'Date',
+        total: 'Total',
+      },
+    },
+    detail: {
+      title: 'Order #{orderId}',
+      totalLabel: 'Total',
+      table: {
+        product: 'Product',
+        price: 'Price',
+        quantity: 'Quantity',
+        subtotal: 'Subtotal',
+      },
+      // AC-neg1/AC-neg2(SBD-1/SBD-8): 非所有・不存在を区別しない統一メッセージ(存在推測を与えない)。
+      unavailable: {
+        title: 'Order not found',
+        desc: 'We could not find this order, or you do not have access to it.',
+      },
+    },
+  },
 } as const
