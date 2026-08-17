@@ -166,8 +166,8 @@ export default {
       billingTitle: 'Billing Address',
       shippingTitle: 'Shipping Address',
       paymentTitle: 'Payment',
-      // AC3: カード入力欄は置かず明示プレースホルダのみ表示する(F3.6承認済)。
-      paymentPlaceholder: 'Payment details will be added in a future update.',
+      // #12 AC3(ID-8): カード入力欄は置かず、実カード情報を「扱わない」ことを明示するプレースホルダのみ表示する(F3.6承認済)。
+      paymentPlaceholder: 'This demo does not collect or store card details.',
       back: 'Back to Address',
       placeOrder: 'Place Order',
       // #8: 送信中の表示文言。
