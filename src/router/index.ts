@@ -12,6 +12,7 @@ import CheckoutView from '@/views/checkout/CheckoutView.vue'
 import CheckoutCompleteView from '@/views/checkout/CheckoutCompleteView.vue'
 import OrderHistoryView from '@/views/order/OrderHistoryView.vue'
 import OrderDetailView from '@/views/order/OrderDetailView.vue'
+import AccountEditView from '@/views/AccountEditView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 declare module 'vue-router' {
@@ -108,6 +109,13 @@ const routes: RouteRecordRaw[] = [
     name: 'order-detail',
     component: OrderDetailView,
     meta: { title: 'JPetStore - Order Detail', requiresAuth: true },
+  },
+  // #14 AC1: アカウント/プロフィール編集(本人固定)。認証必須。
+  {
+    path: '/account',
+    name: 'account-edit',
+    component: AccountEditView,
+    meta: { title: 'JPetStore - Account Settings', requiresAuth: true },
   },
 ]
 

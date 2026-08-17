@@ -1,7 +1,7 @@
 // #7 計画フェーズ確定①: プリフィル用の氏名/連絡先/住所を返すread-only APIクライアント。
 // /api/account/me は認証必須(backend SecurityConfig無変更)。GETのみのためCSRF不要。
 import { request } from '@/api/httpClient'
-import type { AccountContact, RegisterPayload } from '@/domain/account'
+import type { AccountContact, AccountEditDetail, RegisterPayload } from '@/domain/account'
 import type { AuthenticatedUser } from '@/domain/authUser'
 
 interface AccountContactDto {
@@ -38,6 +38,22 @@ interface AuthUserResponseDto {
   roles: string[]
 }
 
+interface AccountEditDto {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  address1: string
+  address2: string | null
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  languagePreference: string
+  favoriteCategoryId: string | null
+  version: number
+}
+
 function toDomain(dto: AccountContactDto): AccountContact {
   return {
     firstName: dto.firstName,
@@ -55,6 +71,24 @@ function toDomain(dto: AccountContactDto): AccountContact {
 
 function toAuthenticatedUser(dto: AuthUserResponseDto): AuthenticatedUser {
   return { username: dto.username, roles: dto.roles }
+}
+
+function toAccountEditDetail(dto: AccountEditDto): AccountEditDetail {
+  return {
+    firstName: dto.firstName,
+    lastName: dto.lastName,
+    email: dto.email,
+    phone: dto.phone,
+    address1: dto.address1,
+    address2: dto.address2,
+    city: dto.city,
+    state: dto.state,
+    postalCode: dto.postalCode,
+    country: dto.country,
+    languagePreference: dto.languagePreference,
+    favoriteCategoryId: dto.favoriteCategoryId,
+    version: dto.version,
+  }
 }
 
 /** チェックアウトの配送/請求先プリフィル専用(read-only)。 */
@@ -90,4 +124,35 @@ export async function registerAccount(payload: RegisterPayload): Promise<Authent
     skipAuthRetry: true,
   })
   return toAuthenticatedUser(dto)
+}
+
+/** #14 AC3/E3: 編集プリフィル用に本人の全編集可フィールドとversionを取得する（{@code /api/account/me}とは別物）。 */
+export async function fetchAccount(): Promise<AccountEditDetail> {
+  const dto = await request<AccountEditDto>('/api/account')
+  return toAccountEditDetail(dto)
+}
+
+/**
+ * #14 AC1〜AC3: アカウント/プロフィールを更新する。versionをそのまま往復させ（楽観ロックの読込トークン・
+ * arch §4.2）、成功すれば更新後の{@link AccountEditDetail}（新しいversion込み）を返す。競合時はbackendが
+ * 409を返し、{@code httpClient}が投げる{@code HttpError}を呼び出し側（{@code stores/account.ts}）が捕捉する。
+ */
+export async function updateAccount(payload: AccountEditDetail): Promise<AccountEditDetail> {
+  const body: AccountEditDto = {
+    firstName: payload.firstName,
+    lastName: payload.lastName,
+    email: payload.email,
+    phone: payload.phone,
+    address1: payload.address1,
+    address2: payload.address2,
+    city: payload.city,
+    state: payload.state,
+    postalCode: payload.postalCode,
+    country: payload.country,
+    languagePreference: payload.languagePreference,
+    favoriteCategoryId: payload.favoriteCategoryId,
+    version: payload.version,
+  }
+  const dto = await request<AccountEditDto>('/api/account', { method: 'PUT', body })
+  return toAccountEditDetail(dto)
 }

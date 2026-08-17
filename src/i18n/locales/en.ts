@@ -98,6 +98,7 @@ export default {
     },
   },
   // #13: ユーザー登録画面。langpref/favcategory入力欄は持たない(E5・サーバ既定値/未設定で登録される)。
+  // #14: アカウント/プロフィール編集画面(本人固定・version楽観ロック)。
   account: {
     register: {
       title: 'Create Account',
@@ -113,6 +114,25 @@ export default {
         PASSWORD_MISMATCH: 'Passwords do not match.',
         default: 'We could not create your account. Please try again.',
       },
+    },
+    edit: {
+      title: 'Account Settings',
+      submit: 'Save Changes',
+      saving: 'Saving…',
+      success: 'Your account has been updated.',
+      error: 'We could not save your changes. Please try again.',
+      loadError: 'We could not load your account. Please try again later.',
+      // #14 AC3/AC-neg3: 409競合(新UX)は再読込を促す(既存order.tsの終端文言型とは別のフロー)。
+      conflict:
+        'This account was updated elsewhere. Please reload the latest version before saving again.',
+      reload: 'Reload Latest',
+      languagePreferenceLabel: 'Language Preference',
+      languageOptions: {
+        english: 'English',
+        japanese: 'Japanese',
+      },
+      favoriteCategoryLabel: 'Favorite Category',
+      favoriteCategoryNone: 'None',
     },
   },
   cart: {

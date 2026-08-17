@@ -26,3 +26,30 @@ export interface RegisterPayload extends Address {
   password: string
   repeatedPassword: string
 }
+
+/**
+ * #14 AC3/E3: アカウント/プロフィール編集の読取/更新に共通の形。GET応答・PUT要求とも同じ形（全項目を毎回
+ * 送る単純な置換更新のためpartial型にしない）。username/status/WHO列は持たない（サーバ権威・編集画面に
+ * 出さない）。楽観ロックの往復に必要な{@link #version}を持つ。
+ *
+ * <p>{@link Address}を継承しない: {@link Address}は{@code AddressForm}が束縛するフォーム値のため
+ * {@code address2}が常に{@code string}（空文字許容）だが、本型はサーバから読み取った値（{@link
+ * AccountContact}と同様、未設定は{@code null}）を表すため{@code address2: string | null}にする必要があり、
+ * 継承すると型が矛盾する。View側で{@code AddressForm}に渡す際は明示的に変換する（{@code
+ * AccountEditView.vue}参照）。
+ */
+export interface AccountEditDetail {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  address1: string
+  address2: string | null
+  city: string
+  state: string
+  postalCode: string
+  country: string
+  languagePreference: string
+  favoriteCategoryId: string | null
+  version: number
+}
