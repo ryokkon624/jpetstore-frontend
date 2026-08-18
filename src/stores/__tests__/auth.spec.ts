@@ -180,14 +180,14 @@ describe('useAuthStore', () => {
       expect(store.registerError).toBe('RATE_LIMITED')
     })
 
-    it('パスワード不一致等(400)はregisterError="PASSWORD_MISMATCH"になる', async () => {
+    it('#17retrofit: バリデーション失敗(400・パスワード不一致/email形式/最大長/PW強度等)はregisterError="VALIDATION_ERROR"になる', async () => {
       mockedAccountApi.registerAccount.mockRejectedValue(new HttpError(400, 'Bad Request'))
       const store = useAuthStore()
 
       const result = await store.register(registerPayload())
 
       expect(result).toBe(false)
-      expect(store.registerError).toBe('PASSWORD_MISMATCH')
+      expect(store.registerError).toBe('VALIDATION_ERROR')
     })
 
     it('その他のエラーはregisterError="default"になる', async () => {

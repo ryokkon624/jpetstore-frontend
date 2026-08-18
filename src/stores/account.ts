@@ -3,6 +3,18 @@ import * as accountApi from '@/api/accountApi'
 import { HttpError } from '@/api/httpClient'
 import type { AccountEditDetail } from '@/domain/account'
 
+/** #15 AC1〜AC2: PW変更失敗の分類（HTTPステータス起点。`auth.ts`のRegisterErrorReasonと同じ設計）。 */
+export type PasswordChangeErrorReason = 'INVALID_CURRENT_PASSWORD' | 'WEAK_PASSWORD' | 'default'
+
+function toPasswordChangeErrorReason(error: unknown): PasswordChangeErrorReason {
+  if (error instanceof HttpError) {
+    // 422: 現在PW誤り(計画フェーズ確定・三系統分離)。400: 弱いPW/不正入力(Bean Validation)。
+    if (error.status === 422) return 'INVALID_CURRENT_PASSWORD'
+    if (error.status === 400) return 'WEAK_PASSWORD'
+  }
+  return 'default'
+}
+
 function initialState() {
   return {
     detail: null as AccountEditDetail | null,
@@ -12,6 +24,10 @@ function initialState() {
     hasConflict: false,
     hasLoadError: false,
     hasSaveError: false,
+    /** #15 AC1〜AC2: パスワード変更の進行中フラグ・失敗理由・成功フラグ。 */
+    isChangingPassword: false,
+    passwordChangeError: null as PasswordChangeErrorReason | null,
+    passwordChangeSuccess: false,
   }
 }
 
@@ -71,6 +87,29 @@ export const useAccountStore = defineStore('account', {
 
     reset(): void {
       Object.assign(this, initialState())
+    },
+
+    /**
+     * 現在パスワード再認証つきでパスワードを変更する（#15 AC1〜AC2）。成功=true。失敗理由（現在PW誤り/弱PW/
+     * その他）は{@link #passwordChangeError}へ分類する（`register`と同じ設計）。
+     */
+    async changePassword(payload: {
+      currentPassword: string
+      newPassword: string
+    }): Promise<boolean> {
+      this.isChangingPassword = true
+      this.passwordChangeError = null
+      this.passwordChangeSuccess = false
+      try {
+        await accountApi.changePassword(payload)
+        this.passwordChangeSuccess = true
+        return true
+      } catch (error) {
+        this.passwordChangeError = toPasswordChangeErrorReason(error)
+        return false
+      } finally {
+        this.isChangingPassword = false
+      }
     },
   },
 })
