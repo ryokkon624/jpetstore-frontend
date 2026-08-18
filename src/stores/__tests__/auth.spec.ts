@@ -1,17 +1,32 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
+import { usePreferencesStore } from '@/stores/preferences'
 import * as authApi from '@/api/authApi'
 import * as accountApi from '@/api/accountApi'
 import { HttpError } from '@/api/httpClient'
 import { emptyAddress } from '@/domain/checkout'
 import type { RegisterPayload } from '@/domain/account'
+import type { AuthResult } from '@/api/authApi'
+import { COLOR_SCHEME_STORAGE_KEY, LANGUAGE_STORAGE_KEY } from '@/utils/preferencesStorage'
 
 vi.mock('@/api/authApi')
 vi.mock('@/api/accountApi')
 
 const mockedAuthApi = vi.mocked(authApi)
 const mockedAccountApi = vi.mocked(accountApi)
+
+/** #36/#25: authApi.login/fetchCurrentUserの新応答形{user, preferences}を組み立てるテスト用ヘルパー。 */
+function authResult(
+  username: string,
+  roles: string[],
+  preferences: { colorSchemePreference: string; languagePreference: string } = {
+    colorSchemePreference: 'system',
+    languagePreference: 'english',
+  },
+): AuthResult {
+  return { user: { username, roles }, preferences }
+}
 
 function registerPayload(overrides: Partial<RegisterPayload> = {}): RegisterPayload {
   return {
@@ -46,7 +61,7 @@ describe('useAuthStore', () => {
   })
 
   it('signonが成功するとuserに{username,roles}がセットされisAuthenticated=trueになる(AC7)', async () => {
-    mockedAuthApi.login.mockResolvedValue({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValue(authResult('j2ee', ['USER']))
     const store = useAuthStore()
 
     const result = await store.signon('j2ee', 'correct-password')
@@ -56,6 +71,22 @@ describe('useAuthStore', () => {
     expect(store.isAuthenticated).toBe(true)
     expect(store.hasSignonError).toBe(false)
     expect(mockedAuthApi.login).toHaveBeenCalledWith('j2ee', 'correct-password')
+  })
+
+  it('signonが成功するとDB権威のテーマ/言語設定がpreferences storeへ適用される(#36 AC6/#25 AC7)', async () => {
+    mockedAuthApi.login.mockResolvedValue(
+      authResult('j2ee', ['USER'], {
+        colorSchemePreference: 'dark',
+        languagePreference: 'japanese',
+      }),
+    )
+    const store = useAuthStore()
+    const preferencesStore = usePreferencesStore()
+
+    await store.signon('j2ee', 'correct-password')
+
+    expect(preferencesStore.colorScheme).toBe('dark')
+    expect(preferencesStore.language).toBe('ja')
   })
 
   it('signonが失敗すると一律のエラー状態(hasSignonError=true)になりuserはnullのまま(AC6・列挙不可)', async () => {
@@ -76,7 +107,7 @@ describe('useAuthStore', () => {
     await store.signon('j2ee', 'wrong-password')
     expect(store.hasSignonError).toBe(true)
 
-    mockedAuthApi.login.mockResolvedValueOnce({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValueOnce(authResult('j2ee', ['USER']))
     await store.signon('j2ee', 'correct-password')
 
     expect(store.hasSignonError).toBe(false)
@@ -84,7 +115,7 @@ describe('useAuthStore', () => {
   })
 
   it('signoffを呼ぶとuserがnullに戻る', async () => {
-    mockedAuthApi.login.mockResolvedValue({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValue(authResult('j2ee', ['USER']))
     mockedAuthApi.logout.mockResolvedValue(undefined)
     const store = useAuthStore()
     await store.signon('j2ee', 'correct-password')
@@ -97,7 +128,7 @@ describe('useAuthStore', () => {
   })
 
   it('signoffのAPI呼び出しが失敗してもローカルのuser状態はクリアされる', async () => {
-    mockedAuthApi.login.mockResolvedValue({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValue(authResult('j2ee', ['USER']))
     mockedAuthApi.logout.mockRejectedValue(new HttpError(500, 'Internal Server Error'))
     const store = useAuthStore()
     await store.signon('j2ee', 'correct-password')
@@ -108,13 +139,29 @@ describe('useAuthStore', () => {
   })
 
   it('fetchCurrentUserが成功するとuserが再水和される(#24論点①・リロード後のidentity復元)', async () => {
-    mockedAuthApi.fetchCurrentUser.mockResolvedValue({ username: 'j2ee', roles: ['USER', 'ADMIN'] })
+    mockedAuthApi.fetchCurrentUser.mockResolvedValue(authResult('j2ee', ['USER', 'ADMIN']))
     const store = useAuthStore()
 
     await store.fetchCurrentUser()
 
     expect(store.user).toEqual({ username: 'j2ee', roles: ['USER', 'ADMIN'] })
     expect(store.isAuthenticated).toBe(true)
+  })
+
+  it('fetchCurrentUserが成功するとDB権威のテーマ/言語設定がpreferences storeへ適用される(#36 AC6/#25 AC7・跨デバイス追従)', async () => {
+    mockedAuthApi.fetchCurrentUser.mockResolvedValue(
+      authResult('j2ee', ['USER'], {
+        colorSchemePreference: 'light',
+        languagePreference: 'japanese',
+      }),
+    )
+    const store = useAuthStore()
+    const preferencesStore = usePreferencesStore()
+
+    await store.fetchCurrentUser()
+
+    expect(preferencesStore.colorScheme).toBe('light')
+    expect(preferencesStore.language).toBe('ja')
   })
 
   it('fetchCurrentUserが401で失敗するとuserはnullのまま(未認証)', async () => {
@@ -127,14 +174,20 @@ describe('useAuthStore', () => {
     expect(store.isAuthenticated).toBe(false)
   })
 
-  it('signon成功時にlocalStorage/sessionStorageへ一切書き込まない(AC5・トークン非JS保持)', async () => {
+  it('signon成功時にlocalStorageへ書き込まれるのはpreferencesキーのみで、トークン等は一切書き込まれない(AC5・トークン非JS保持)', async () => {
     const localSetItemSpy = vi.spyOn(Storage.prototype, 'setItem')
-    mockedAuthApi.login.mockResolvedValue({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValue(authResult('j2ee', ['USER']))
     const store = useAuthStore()
 
     await store.signon('j2ee', 'correct-password')
 
-    expect(localSetItemSpy).not.toHaveBeenCalled()
+    // #36/#25: hydrateFromDb経由でpreferences(テーマ/言語)キーへの書き込みは正当な新規挙動。
+    // トークン等の機微情報キーが書き込まれていないことのみを検証する(AC5の本来の趣旨)。
+    const writtenKeys = localSetItemSpy.mock.calls.map(([key]) => key)
+    expect(writtenKeys.length).toBeGreaterThan(0)
+    expect(
+      writtenKeys.every((key) => key === COLOR_SCHEME_STORAGE_KEY || key === LANGUAGE_STORAGE_KEY),
+    ).toBe(true)
     localSetItemSpy.mockRestore()
   })
 

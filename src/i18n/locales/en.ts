@@ -22,6 +22,17 @@ export default {
         label: 'Search products',
         placeholder: 'Search products…',
       },
+      // #36 AC1: ヘッダーのテーマ設定ドロップダウン(アイコン+Light/Dark/Systemの3択)。
+      settings: {
+        theme: {
+          label: 'Theme',
+          options: {
+            system: 'System',
+            light: 'Light',
+            dark: 'Dark',
+          },
+        },
+      },
     },
   },
   home: {

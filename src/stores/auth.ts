@@ -4,6 +4,7 @@ import * as accountApi from '@/api/accountApi'
 import { HttpError } from '@/api/httpClient'
 import type { AuthenticatedUser } from '@/domain/authUser'
 import type { RegisterPayload } from '@/domain/account'
+import { usePreferencesStore } from '@/stores/preferences'
 
 /**
  * #13 AC1/AC3/AC4: 登録失敗の分類（HTTPステータス起点。`order.ts`のPlaceOrderErrorReasonと同じ設計）。
@@ -46,12 +47,19 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    /** AC6/AC7: 成否のみ返す。失敗理由（未知ユーザー/誤PW/その他）は呼び出し側に一切渡さない。 */
+    /**
+     * AC6/AC7: 成否のみ返す。失敗理由（未知ユーザー/誤PW/その他）は呼び出し側に一切渡さない。
+     *
+     * <p>#36 AC6/#25 AC7: 成功時はDB権威のテーマ/言語設定をpreferences storeへ適用する（Q2・単一の
+     * LoginResponseで両方まかなう）。
+     */
     async signon(username: string, password: string): Promise<boolean> {
       this.isSigningOn = true
       this.hasSignonError = false
       try {
-        this.user = await authApi.login(username, password)
+        const result = await authApi.login(username, password)
+        this.user = result.user
+        usePreferencesStore().hydrateFromDb(result.preferences)
         return true
       } catch {
         this.user = null
@@ -71,10 +79,16 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
-    /** #24 論点①: 起動時に呼び、リロードで揮発した identity を httpOnly Cookie 側の状態から再水和する。 */
+    /**
+     * #24 論点①: 起動時に呼び、リロードで揮発した identity を httpOnly Cookie 側の状態から再水和する。
+     *
+     * <p>#36 AC6/#25 AC7: 成功時はDB権威のテーマ/言語設定もpreferences storeへ適用する（跨デバイス追従）。
+     */
     async fetchCurrentUser(): Promise<void> {
       try {
-        this.user = await authApi.fetchCurrentUser()
+        const result = await authApi.fetchCurrentUser()
+        this.user = result.user
+        usePreferencesStore().hydrateFromDb(result.preferences)
       } catch {
         this.user = null
       }

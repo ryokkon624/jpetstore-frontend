@@ -1,17 +1,32 @@
 <script setup lang="ts">
 // one-system 共通ヘッダー（AC2）。ロゴ・検索バー・主要ナビ・認証状態に応じたサインオン/サインオフを表示する。
 // #4: カートは実ルート(/cart)に接続し、件数バッジ(jps-cart-count)を表示する。
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
+import { usePreferencesStore } from '@/stores/preferences'
+import type { ColorScheme } from '@/domain/preferences'
+import SettingsDropdown from '@/components/SettingsDropdown.vue'
 import logoUrl from '@/assets/logo.svg'
 
 const { t } = useI18n()
 const authStore = useAuthStore()
 const cartStore = useCartStore()
+const preferencesStore = usePreferencesStore()
 const router = useRouter()
+
+// #36 AC1: ヘッダーのテーマ設定ドロップダウン(未ログインでも表示・操作可)。
+const themeOptions = computed(() => [
+  { value: 'system', label: t('app.header.settings.theme.options.system') },
+  { value: 'light', label: t('app.header.settings.theme.options.light') },
+  { value: 'dark', label: t('app.header.settings.theme.options.dark') },
+])
+
+function handleThemeChange(value: string): void {
+  preferencesStore.setColorScheme(value as ColorScheme)
+}
 
 // AC5: 状態変更(サインオフ)は明示ボタン+CSRF経由のPOSTで行う(GETリンクで確定しない)。
 async function handleSignOff() {
@@ -60,6 +75,12 @@ function handleSearchSubmit() {
       </nav>
 
       <div class="app-header__account">
+        <SettingsDropdown
+          :label="t('app.header.settings.theme.label')"
+          :options="themeOptions"
+          :model-value="preferencesStore.colorScheme"
+          @update:model-value="handleThemeChange"
+        />
         <template v-if="authStore.isAuthenticated">
           <span class="app-header__greeting">
             {{ t('app.header.account.greeting', { username: authStore.user?.username }) }}

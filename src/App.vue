@@ -6,9 +6,15 @@
 import { watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
+import { usePreferencesStore } from '@/stores/preferences'
 
 const authStore = useAuthStore()
 const cartStore = useCartStore()
+
+// #36 AC3/AC4: localStorageの選択をPinia state(ドロップダウンの選択表示等)へ同期する。
+// <html>のdark/lightクラス自体はindex.htmlのhead script(Q3)が初回描画前に適用済みのため、
+// ここでの再適用は冪等(同じlocalStorageキーを読むため二重適用しても結果は変わらない)。
+usePreferencesStore().init()
 
 watch(
   () => authStore.isAuthenticated,

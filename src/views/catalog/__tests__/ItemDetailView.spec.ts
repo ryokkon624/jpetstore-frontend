@@ -108,7 +108,7 @@ describe('ItemDetailView', () => {
     })
     const { wrapper } = await mountItemDetailView('EST-22')
 
-    const button = wrapper.find('button')
+    const button = wrapper.find('button.item-detail-view__add-to-cart')
     expect(button.attributes('disabled')).toBeUndefined()
   })
 
@@ -124,7 +124,7 @@ describe('ItemDetailView', () => {
     })
     const { wrapper } = await mountItemDetailView('EST-3')
 
-    const button = wrapper.find('button')
+    const button = wrapper.find('button.item-detail-view__add-to-cart')
     expect(button.attributes('disabled')).toBeDefined()
   })
 
@@ -141,7 +141,7 @@ describe('ItemDetailView', () => {
     mockedCartApi.checkOrderable.mockResolvedValue({ orderable: true, reason: null })
     const { wrapper } = await mountItemDetailView('EST-22')
 
-    await wrapper.find('button').trigger('click')
+    await wrapper.find('button.item-detail-view__add-to-cart').trigger('click')
     await flushPromises()
 
     expect(mockedCartApi.checkOrderable).toHaveBeenCalledWith('EST-22', 1)
@@ -161,7 +161,7 @@ describe('ItemDetailView', () => {
     mockedCartApi.checkOrderable.mockResolvedValue({ orderable: false, reason: 'EXCEEDS_STOCK' })
     const { wrapper } = await mountItemDetailView('EST-2')
 
-    await wrapper.find('button').trigger('click')
+    await wrapper.find('button.item-detail-view__add-to-cart').trigger('click')
     await flushPromises()
 
     expect(wrapper.text()).toContain('exceeds the available stock')
