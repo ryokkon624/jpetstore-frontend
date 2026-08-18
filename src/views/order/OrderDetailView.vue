@@ -9,7 +9,7 @@ import { useRoute } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import { useOrderStore } from '@/stores/order'
 
-const { t, n } = useI18n()
+const { t, n, d } = useI18n()
 const route = useRoute()
 const orderStore = useOrderStore()
 
@@ -17,6 +17,11 @@ const orderId = computed(() => Number(route.params.orderId))
 
 function formatPrice(price: number): string {
   return n(price, { style: 'currency', currency: 'USD' })
+}
+
+// #25 AC3(Q-1最小): OrderHistoryView.vueと同じ整形(backendのLocalDate ISO文字列をlocale連動で表示)。
+function formatDate(isoDate: string): string {
+  return d(new Date(isoDate), 'short')
 }
 
 watch(orderId, () => orderStore.fetchDetail(orderId.value), { immediate: true })
@@ -40,7 +45,7 @@ watch(orderId, () => orderStore.fetchDetail(orderId.value), { immediate: true })
         <h1 class="order-detail-view__title">
           {{ t('order.detail.title', { orderId: orderStore.detail.orderId }) }}
         </h1>
-        <p class="order-detail-view__date">{{ orderStore.detail.orderDate }}</p>
+        <p class="order-detail-view__date">{{ formatDate(orderStore.detail.orderDate) }}</p>
 
         <table class="jps-table">
           <thead>

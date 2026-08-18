@@ -18,15 +18,9 @@ function applyColorScheme(value: ColorScheme): void {
   }
 }
 
-/**
- * #25 AC5: i18nのlocaleを切り替える(head scriptは不要。createI18n時のseedと同じlocalStorageキーを参照)。
- *
- * <p>本Story(#36)時点では`i18n/index.ts`の`messages`に`ja`が未追加のため、`i18n.global.locale`の型は
- * まだ`'en'`のみに narrow されている。`Language`('en'|'ja')全体を安全に代入するため一時的にキャストする
- * （#25で`messages: {en, ja}`が揃えばこのキャストは自明な同一型代入になる。実行時挙動には影響しない）。
- */
+/** #25 AC5: i18nのlocaleを切り替える(head scriptは不要。createI18n時のseedと同じlocalStorageキーを参照)。 */
 function applyLanguage(value: Language): void {
-  i18n.global.locale.value = value as unknown as typeof i18n.global.locale.value
+  i18n.global.locale.value = value
 }
 
 /** AC-neg1/#25 AC5: DB由来のcolorScheme値は3値enum以外System(不正/未知値のフォールバック)。 */

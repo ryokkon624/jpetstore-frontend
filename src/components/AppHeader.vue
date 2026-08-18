@@ -7,7 +7,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { useCartStore } from '@/stores/cart'
 import { usePreferencesStore } from '@/stores/preferences'
-import type { ColorScheme } from '@/domain/preferences'
+import type { ColorScheme, Language } from '@/domain/preferences'
 import SettingsDropdown from '@/components/SettingsDropdown.vue'
 import logoUrl from '@/assets/logo.svg'
 
@@ -26,6 +26,16 @@ const themeOptions = computed(() => [
 
 function handleThemeChange(value: string): void {
   preferencesStore.setColorScheme(value as ColorScheme)
+}
+
+// #25 AC5: ヘッダーの言語切替ドロップダウン(English/日本語の2択・未ログインでも表示・操作可)。
+const languageOptions = computed(() => [
+  { value: 'en', label: t('app.header.settings.language.options.en') },
+  { value: 'ja', label: t('app.header.settings.language.options.ja') },
+])
+
+function handleLanguageChange(value: string): void {
+  preferencesStore.setLanguage(value as Language)
 }
 
 // AC5: 状態変更(サインオフ)は明示ボタン+CSRF経由のPOSTで行う(GETリンクで確定しない)。
@@ -80,6 +90,12 @@ function handleSearchSubmit() {
           :options="themeOptions"
           :model-value="preferencesStore.colorScheme"
           @update:model-value="handleThemeChange"
+        />
+        <SettingsDropdown
+          :label="t('app.header.settings.language.label')"
+          :options="languageOptions"
+          :model-value="preferencesStore.language"
+          @update:model-value="handleLanguageChange"
         />
         <template v-if="authStore.isAuthenticated">
           <span class="app-header__greeting">

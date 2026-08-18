@@ -1,4 +1,4 @@
-// 英語のみ（PO決定・Refinement 2026-08-11）。日本語は将来スプリント(#25)。
+// #25: 日本語(ja.ts)を追加。両ファイルはshapeをミラーする(未翻訳キーはfallbackLocale='en'で自動フォールバック)。
 // キー構造: domain.context.key（frontend-conventions 準拠）
 export default {
   app: {
@@ -23,6 +23,7 @@ export default {
         placeholder: 'Search products…',
       },
       // #36 AC1: ヘッダーのテーマ設定ドロップダウン(アイコン+Light/Dark/Systemの3択)。
+      // #25 AC5: ヘッダーの言語切替ドロップダウン(English/日本語の2択)。
       settings: {
         theme: {
           label: 'Theme',
@@ -30,6 +31,13 @@ export default {
             system: 'System',
             light: 'Light',
             dark: 'Dark',
+          },
+        },
+        language: {
+          label: 'Language',
+          options: {
+            en: 'English',
+            ja: '日本語',
           },
         },
       },

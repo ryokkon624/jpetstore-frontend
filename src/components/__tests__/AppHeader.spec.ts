@@ -143,3 +143,47 @@ describe('AppHeader テーマ設定ドロップダウン(#36 AC1)', () => {
     expect(wrapper.find('.jps-settings-dropdown__menu').exists()).toBe(false)
   })
 })
+
+describe('AppHeader 言語切替ドロップダウン(#25 AC5)', () => {
+  let wrapper: VueWrapper | undefined
+
+  beforeEach(() => {
+    setActivePinia(createPinia())
+  })
+
+  afterEach(() => {
+    wrapper?.unmount()
+    wrapper = undefined
+    i18n.global.locale.value = 'en'
+  })
+
+  function languageTrigger(w: VueWrapper) {
+    return w.findAll('.jps-settings-dropdown__trigger').at(1)!
+  }
+
+  it('未ログインでも言語ドロップダウンのトリガーを表示する(未ログインでも表示・操作可)', async () => {
+    wrapper = await mountAppHeader()
+
+    const triggers = wrapper.findAll('.jps-settings-dropdown__trigger')
+    expect(triggers).toHaveLength(2)
+  })
+
+  it('既定値はEnglishとして表示される', async () => {
+    wrapper = await mountAppHeader()
+
+    expect(languageTrigger(wrapper).text()).toBe('English')
+  })
+
+  it('日本語を選択するとi18nのlocaleがjaへ切り替わり、ヘッダー自体も日本語表示になる', async () => {
+    wrapper = await mountAppHeader()
+    await languageTrigger(wrapper).trigger('click')
+
+    const options = wrapper.findAll('.jps-settings-dropdown__option')
+    const japaneseOption = options.find((o) => o.text() === '日本語')
+    await japaneseOption!.trigger('click')
+
+    expect(i18n.global.locale.value).toBe('ja')
+    expect(usePreferencesStore().language).toBe('ja')
+    expect(wrapper.find('.app-header__account a[href="/signon"]').text()).toBe('サインイン')
+  })
+})
