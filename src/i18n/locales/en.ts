@@ -9,6 +9,9 @@ export default {
         home: 'Home',
         catalog: 'Catalog',
         cart: 'Cart',
+        // #34 AC1: 認証済み時のみ表示するナビ導線(注文履歴/アカウント設定)。
+        orders: 'Orders',
+        account: 'Account',
       },
       account: {
         signIn: 'Sign In',
