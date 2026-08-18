@@ -32,10 +32,6 @@ export default {
       browseCatalog: 'Browse Catalog',
       newHere: 'New Here?',
     },
-    tokens: {
-      title: 'Design Token Check',
-      desc: 'A verification slot confirming the CSS custom properties (--jps-primary / --jps-accent / --jps-surface, etc.) and the \\@layer classes defined in main.css work as expected.',
-    },
   },
   catalog: {
     breadcrumb: {
