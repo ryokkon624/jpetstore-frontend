@@ -146,6 +146,9 @@ export default {
         english: 'English',
         japanese: 'Japanese',
       },
+      // #36 Q2(パリティ): ヘッダーのテーマドロップダウンと対称にAccountEditでも編集可にする
+      // (選択肢テキストはapp.header.settings.theme.optionsを再利用)。
+      colorSchemePreferenceLabel: 'Theme',
       favoriteCategoryLabel: 'Favorite Category',
       favoriteCategoryNone: 'None',
       // #15 導線: 編集画面からPW変更画面へのリンク。

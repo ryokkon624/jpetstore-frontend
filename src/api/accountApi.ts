@@ -56,6 +56,7 @@ interface AccountEditDto {
   country: string
   languagePreference: string
   favoriteCategoryId: string | null
+  colorSchemePreference: string
   version: number
 }
 
@@ -92,6 +93,7 @@ function toAccountEditDetail(dto: AccountEditDto): AccountEditDetail {
     country: dto.country,
     languagePreference: dto.languagePreference,
     favoriteCategoryId: dto.favoriteCategoryId,
+    colorSchemePreference: dto.colorSchemePreference,
     version: dto.version,
   }
 }
@@ -156,6 +158,7 @@ export async function updateAccount(payload: AccountEditDetail): Promise<Account
     country: payload.country,
     languagePreference: payload.languagePreference,
     favoriteCategoryId: payload.favoriteCategoryId,
+    colorSchemePreference: payload.colorSchemePreference,
     version: payload.version,
   }
   const dto = await request<AccountEditDto>('/api/account', { method: 'PUT', body })

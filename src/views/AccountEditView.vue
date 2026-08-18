@@ -7,13 +7,20 @@ import AppLayout from '@/components/AppLayout.vue'
 import AddressForm from '@/components/checkout/AddressForm.vue'
 import { useAccountStore } from '@/stores/account'
 import { useCatalogStore } from '@/stores/catalog'
+import { usePreferencesStore } from '@/stores/preferences'
 import type { AccountEditDetail } from '@/domain/account'
+import type { ColorScheme, Language } from '@/domain/preferences'
 import { emptyAddress, type Address } from '@/domain/checkout'
 import { isValidEmail, ACCOUNT_FIELD_MAX_LENGTH } from '@/utils/accountValidation'
+import { toDbLanguagePreference } from '@/utils/preferencesMapping'
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
 const catalogStore = useCatalogStore()
+// #36 Q2(パリティ): テーマ/言語ともpreferences store(単一ソース)を直接編集する。ヘッダーと同じ即時適用
+// (setColorScheme/setLanguageがlocalStorage保存・DOM/i18n適用まで行う)。二重ソースを避けるため、
+// このView専用のローカルref(旧languagePreference)は持たない。
+const preferencesStore = usePreferencesStore()
 
 // #17 AC3: register側と同じフィールド単位インライン検証(UX向上・backendの権威400がbackstop)。
 const addressFieldMaxLengths = {
@@ -33,7 +40,6 @@ const addressFieldMaxLengths = {
 // address2はサーバ由来でnull許容のため、フォーム用のaddressと編集専用フィールドを分けて保持し、
 // 送信時にのみ合成する(checkout store の toAddress/emptyAddress と同じ橋渡しパターン)。
 const address = ref<Address>(emptyAddress())
-const languagePreference = ref('english')
 const favoriteCategoryId = ref<string | null>(null)
 const version = ref(0)
 const loaded = ref(false)
@@ -63,10 +69,18 @@ function syncFormFromStore() {
     postalCode: detail.postalCode,
     country: detail.country,
   }
-  languagePreference.value = detail.languagePreference
   favoriteCategoryId.value = detail.favoriteCategoryId
   version.value = detail.version
   loaded.value = true
+}
+
+// #36 Q2: ヘッダーと同型の即時適用ハンドラ(state→localStorage→DOM/i18n適用)。
+function handleLanguageChange(event: Event): void {
+  preferencesStore.setLanguage((event.target as HTMLSelectElement).value as Language)
+}
+
+function handleColorSchemeChange(event: Event): void {
+  preferencesStore.setColorScheme((event.target as HTMLSelectElement).value as ColorScheme)
 }
 
 const addressErrors = computed<Partial<Record<keyof Address, string>>>(() => {
@@ -93,8 +107,9 @@ async function handleSubmit() {
   const payload: AccountEditDetail = {
     ...address.value,
     address2: address.value.address2 || null,
-    languagePreference: languagePreference.value,
+    languagePreference: toDbLanguagePreference(preferencesStore.language),
     favoriteCategoryId: favoriteCategoryId.value,
+    colorSchemePreference: preferencesStore.colorScheme,
     version: version.value,
   }
   const success = await accountStore.updateAccount(payload)
@@ -146,11 +161,29 @@ async function handleReload() {
           </label>
           <select
             id="account-edit-language-preference"
-            v-model="languagePreference"
+            :value="preferencesStore.language"
             class="jps-select"
+            @change="handleLanguageChange"
           >
-            <option value="english">{{ t('account.edit.languageOptions.english') }}</option>
-            <option value="japanese">{{ t('account.edit.languageOptions.japanese') }}</option>
+            <option value="en">{{ t('account.edit.languageOptions.english') }}</option>
+            <option value="ja">{{ t('account.edit.languageOptions.japanese') }}</option>
+          </select>
+        </div>
+
+        <!-- #36 Q2(パリティ): ヘッダーのテーマドロップダウンと対称にAccountEditでも編集可にする。 -->
+        <div class="jps-field">
+          <label class="jps-label" for="account-edit-color-scheme">
+            {{ t('account.edit.colorSchemePreferenceLabel') }}
+          </label>
+          <select
+            id="account-edit-color-scheme"
+            :value="preferencesStore.colorScheme"
+            class="jps-select"
+            @change="handleColorSchemeChange"
+          >
+            <option value="system">{{ t('app.header.settings.theme.options.system') }}</option>
+            <option value="light">{{ t('app.header.settings.theme.options.light') }}</option>
+            <option value="dark">{{ t('app.header.settings.theme.options.dark') }}</option>
           </select>
         </div>
 

@@ -147,6 +147,7 @@ describe('accountApi', () => {
       country: 'USA',
       languagePreference: 'english',
       favoriteCategoryId: 'FISH',
+      colorSchemePreference: 'dark',
       version: 3,
     })
 
@@ -166,11 +167,12 @@ describe('accountApi', () => {
       country: 'USA',
       languagePreference: 'english',
       favoriteCategoryId: 'FISH',
+      colorSchemePreference: 'dark',
       version: 3,
     })
   })
 
-  it('#14 AC1〜AC3: updateAccountはPUT /api/accountへversion込みで送信しdomainへ変換する', async () => {
+  it('#14 AC1〜AC3/#36 AC7: updateAccountはPUT /api/accountへversion/colorSchemePreference込みで送信しdomainへ変換する', async () => {
     const payload: AccountEditDetail = {
       firstName: 'Jiro',
       lastName: 'Suzuki',
@@ -184,6 +186,7 @@ describe('accountApi', () => {
       country: 'USA',
       languagePreference: 'japanese',
       favoriteCategoryId: 'DOGS',
+      colorSchemePreference: 'light',
       version: 3,
     }
     mockedRequest.mockResolvedValue({ ...payload, version: 4 })
@@ -196,6 +199,7 @@ describe('accountApi', () => {
     })
     expect(detail.version).toBe(4)
     expect(detail.firstName).toBe('Jiro')
+    expect(detail.colorSchemePreference).toBe('light')
   })
 
   it('#15 AC1〜AC2: changePasswordはPOST /api/account/passwordへcurrentPassword/newPasswordのみ送信する', async () => {

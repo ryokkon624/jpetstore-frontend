@@ -23,6 +23,7 @@ function editDetail(overrides: Partial<AccountEditDetail> = {}): AccountEditDeta
     country: 'USA',
     languagePreference: 'english',
     favoriteCategoryId: 'FISH',
+    colorSchemePreference: 'system',
     version: 3,
     ...overrides,
   }
