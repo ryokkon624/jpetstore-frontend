@@ -99,6 +99,8 @@ export default {
   },
   // #13: ユーザー登録画面。langpref/favcategory入力欄は持たない(E5・サーバ既定値/未設定で登録される)。
   // #14: アカウント/プロフィール編集画面(本人固定・version楽観ロック)。
+  // #15: パスワード変更画面(現在PW再認証必須・成功時セッションローテート)。
+  // #17: 入力検証(email形式・最大長・PW強度)の共有インラインエラーキー(validation)。
   account: {
     register: {
       title: 'Create Account',
@@ -111,9 +113,12 @@ export default {
         // #13 E4: username重複は明示メッセージ(列挙対策はレート制限が担保する前提)。
         USERNAME_TAKEN: 'That username is already taken. Please choose another.',
         RATE_LIMITED: 'Too many attempts. Please wait a while and try again.',
-        PASSWORD_MISMATCH: 'Passwords do not match.',
+        // #17retrofit: パスワード不一致に限らずemail形式/最大長/PW強度等の複数原因になり得る一般文言。
+        VALIDATION_ERROR: 'Please check your information and try again.',
         default: 'We could not create your account. Please try again.',
       },
+      // #13登録フォーム自身のクライアント側password一致プレチェック用(backendのVALIDATION_ERRORとは別経路)。
+      passwordMismatch: 'Passwords do not match.',
     },
     edit: {
       title: 'Account Settings',
@@ -133,6 +138,32 @@ export default {
       },
       favoriteCategoryLabel: 'Favorite Category',
       favoriteCategoryNone: 'None',
+      // #15 導線: 編集画面からPW変更画面へのリンク。
+      changePasswordLink: 'Change Password',
+    },
+    password: {
+      title: 'Change Password',
+      currentPasswordLabel: 'Current Password',
+      newPasswordLabel: 'New Password',
+      confirmNewPasswordLabel: 'Confirm New Password',
+      submit: 'Change Password',
+      submitting: 'Changing Password…',
+      success: 'Your password has been changed.',
+      mismatch: 'New password and confirmation do not match.',
+      error: {
+        // #15 AC-neg1: 現在PW誤り(422)。
+        INVALID_CURRENT_PASSWORD: 'Current password is incorrect.',
+        WEAK_PASSWORD:
+          'Password must be 8-72 characters and include at least 2 of: uppercase letters, lowercase letters, digits, symbols.',
+        default: 'We could not change your password. Please try again.',
+      },
+    },
+    // #17 AC3: register/edit/password共通のインラインフィールドエラー文言。
+    validation: {
+      emailInvalid: 'Please enter a valid email address.',
+      tooLong: 'This field is too long.',
+      weakPassword:
+        'Password must be 8-72 characters and include at least 2 of: uppercase letters, lowercase letters, digits, symbols.',
     },
   },
   cart: {

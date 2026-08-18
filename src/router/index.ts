@@ -13,6 +13,7 @@ import CheckoutCompleteView from '@/views/checkout/CheckoutCompleteView.vue'
 import OrderHistoryView from '@/views/order/OrderHistoryView.vue'
 import OrderDetailView from '@/views/order/OrderDetailView.vue'
 import AccountEditView from '@/views/AccountEditView.vue'
+import PasswordChangeView from '@/views/PasswordChangeView.vue'
 import { createAuthGuard } from '@/router/authGuard'
 
 declare module 'vue-router' {
@@ -116,6 +117,13 @@ const routes: RouteRecordRaw[] = [
     name: 'account-edit',
     component: AccountEditView,
     meta: { title: 'JPetStore - Account Settings', requiresAuth: true },
+  },
+  // #15 AC1: パスワード変更(本人固定・現在PW再認証必須)。認証必須。
+  {
+    path: '/account/password',
+    name: 'account-password',
+    component: PasswordChangeView,
+    meta: { title: 'JPetStore - Change Password', requiresAuth: true },
   },
 ]
 

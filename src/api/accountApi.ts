@@ -38,6 +38,11 @@ interface AuthUserResponseDto {
   roles: string[]
 }
 
+interface PasswordChangeRequestDto {
+  currentPassword: string
+  newPassword: string
+}
+
 interface AccountEditDto {
   firstName: string
   lastName: string
@@ -155,4 +160,21 @@ export async function updateAccount(payload: AccountEditDetail): Promise<Account
   }
   const dto = await request<AccountEditDto>('/api/account', { method: 'PUT', body })
   return toAccountEditDetail(dto)
+}
+
+/**
+ * #15 AC1〜AC2: 現在パスワード再認証つきでパスワードを変更する。allowlist(SBD-2)のみ送信し、
+ * userid/username等は一切送らない(サーバ権威・{@code CurrentUserProvider}起点で本人固定)。応答は204
+ * (本文なし)。現在PW誤りはbackendが422を返し、{@code httpClient}が投げる{@code HttpError}を
+ * 呼び出し側({@code stores/account.ts})が捕捉する。
+ */
+export async function changePassword(payload: {
+  currentPassword: string
+  newPassword: string
+}): Promise<void> {
+  const body: PasswordChangeRequestDto = {
+    currentPassword: payload.currentPassword,
+    newPassword: payload.newPassword,
+  }
+  await request<void>('/api/account/password', { method: 'POST', body })
 }

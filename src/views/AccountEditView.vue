@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // #14 AC1〜AC3: アカウント/プロフィール編集画面。requiresAuth(本人のみ)。version楽観ロック（arch §4.2）。
 // 409競合時は新UX（既存order.tsの409→終端文言とは別・store.shouldPromptReloadで「再読込」を促す）。
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppLayout from '@/components/AppLayout.vue'
 import AddressForm from '@/components/checkout/AddressForm.vue'
@@ -9,10 +9,25 @@ import { useAccountStore } from '@/stores/account'
 import { useCatalogStore } from '@/stores/catalog'
 import type { AccountEditDetail } from '@/domain/account'
 import { emptyAddress, type Address } from '@/domain/checkout'
+import { isValidEmail, ACCOUNT_FIELD_MAX_LENGTH } from '@/utils/accountValidation'
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
 const catalogStore = useCatalogStore()
+
+// #17 AC3: register側と同じフィールド単位インライン検証(UX向上・backendの権威400がbackstop)。
+const addressFieldMaxLengths = {
+  firstName: ACCOUNT_FIELD_MAX_LENGTH.firstName,
+  lastName: ACCOUNT_FIELD_MAX_LENGTH.lastName,
+  email: ACCOUNT_FIELD_MAX_LENGTH.email,
+  phone: ACCOUNT_FIELD_MAX_LENGTH.phone,
+  address1: ACCOUNT_FIELD_MAX_LENGTH.address1,
+  address2: ACCOUNT_FIELD_MAX_LENGTH.address2,
+  city: ACCOUNT_FIELD_MAX_LENGTH.city,
+  state: ACCOUNT_FIELD_MAX_LENGTH.state,
+  postalCode: ACCOUNT_FIELD_MAX_LENGTH.postalCode,
+  country: ACCOUNT_FIELD_MAX_LENGTH.country,
+} as const satisfies Partial<Record<keyof Address, number>>
 
 // AddressFormは`Address`(氏名/連絡先/住所・address2は常にstring)のみを束縛する。AccountEditDetailの
 // address2はサーバ由来でnull許容のため、フォーム用のaddressと編集専用フィールドを分けて保持し、
@@ -54,8 +69,27 @@ function syncFormFromStore() {
   loaded.value = true
 }
 
+const addressErrors = computed<Partial<Record<keyof Address, string>>>(() => {
+  const errors: Partial<Record<keyof Address, string>> = {}
+  const current = address.value
+  if (current.email.length > 0 && !isValidEmail(current.email)) {
+    errors.email = t('account.validation.emailInvalid')
+  }
+  for (const key of Object.keys(addressFieldMaxLengths) as (keyof Address)[]) {
+    const value = current[key]
+    const max = addressFieldMaxLengths[key]
+    if (value.length > 0 && max !== undefined && value.length > max) {
+      errors[key] = t('account.validation.tooLong')
+    }
+  }
+  return errors
+})
+
 async function handleSubmit() {
   justSaved.value = false
+  if (Object.keys(addressErrors.value).length > 0) {
+    return
+  }
   const payload: AccountEditDetail = {
     ...address.value,
     address2: address.value.address2 || null,
@@ -99,7 +133,12 @@ async function handleReload() {
           {{ t('account.edit.success') }}
         </p>
 
-        <AddressForm v-model="address" id-prefix="account-edit" />
+        <AddressForm
+          v-model="address"
+          id-prefix="account-edit"
+          :errors="addressErrors"
+          :max-lengths="addressFieldMaxLengths"
+        />
 
         <div class="jps-field">
           <label class="jps-label" for="account-edit-language-preference">
@@ -142,6 +181,10 @@ async function handleReload() {
         >
           {{ accountStore.isSaving ? t('account.edit.saving') : t('account.edit.submit') }}
         </button>
+
+        <RouterLink to="/account/password" class="jps-btn jps-btn-secondary jps-btn-block">
+          {{ t('account.edit.changePasswordLink') }}
+        </RouterLink>
       </form>
     </div>
     <p v-else-if="accountStore.hasLoadError" class="jps-alert jps-alert-danger" role="alert">

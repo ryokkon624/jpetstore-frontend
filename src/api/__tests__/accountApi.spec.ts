@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
-import { fetchAccountContact, registerAccount, fetchAccount, updateAccount } from '@/api/accountApi'
+import {
+  fetchAccountContact,
+  registerAccount,
+  fetchAccount,
+  updateAccount,
+  changePassword,
+} from '@/api/accountApi'
 import { request } from '@/api/httpClient'
 import { emptyAddress } from '@/domain/checkout'
 import type { RegisterPayload, AccountEditDetail } from '@/domain/account'
@@ -190,5 +196,16 @@ describe('accountApi', () => {
     })
     expect(detail.version).toBe(4)
     expect(detail.firstName).toBe('Jiro')
+  })
+
+  it('#15 AC1〜AC2: changePasswordはPOST /api/account/passwordへcurrentPassword/newPasswordのみ送信する', async () => {
+    mockedRequest.mockResolvedValue(undefined)
+
+    await changePassword({ currentPassword: 'OldCorrect#1', newPassword: 'NewCorrect#2' })
+
+    expect(mockedRequest).toHaveBeenCalledWith('/api/account/password', {
+      method: 'POST',
+      body: { currentPassword: 'OldCorrect#1', newPassword: 'NewCorrect#2' },
+    })
   })
 })

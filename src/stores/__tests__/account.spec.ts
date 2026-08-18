@@ -130,4 +130,87 @@ describe('useAccountStore (#14 AC1〜AC3)', () => {
     expect(store.hasSaveError).toBe(false)
     expect(store.hasLoadError).toBe(false)
   })
+
+  describe('changePassword (#15 AC1〜AC2)', () => {
+    it('初期状態はisChangingPassword=false・passwordChangeError=null・passwordChangeSuccess=falseである', () => {
+      const store = useAccountStore()
+      expect(store.isChangingPassword).toBe(false)
+      expect(store.passwordChangeError).toBeNull()
+      expect(store.passwordChangeSuccess).toBe(false)
+    })
+
+    it('成功するとpasswordChangeSuccess=trueになりtrueを返す', async () => {
+      mockedAccountApi.changePassword.mockResolvedValue(undefined)
+      const store = useAccountStore()
+
+      const result = await store.changePassword({
+        currentPassword: 'OldCorrect#1',
+        newPassword: 'NewCorrect#2',
+      })
+
+      expect(result).toBe(true)
+      expect(store.passwordChangeSuccess).toBe(true)
+      expect(store.passwordChangeError).toBeNull()
+      expect(store.isChangingPassword).toBe(false)
+      expect(mockedAccountApi.changePassword).toHaveBeenCalledWith({
+        currentPassword: 'OldCorrect#1',
+        newPassword: 'NewCorrect#2',
+      })
+    })
+
+    it('現在PW誤り(422)はpasswordChangeError="INVALID_CURRENT_PASSWORD"になりfalseを返す', async () => {
+      mockedAccountApi.changePassword.mockRejectedValue(new HttpError(422, 'Unprocessable Entity'))
+      const store = useAccountStore()
+
+      const result = await store.changePassword({
+        currentPassword: 'Wrong#1',
+        newPassword: 'NewCorrect#2',
+      })
+
+      expect(result).toBe(false)
+      expect(store.passwordChangeError).toBe('INVALID_CURRENT_PASSWORD')
+      expect(store.passwordChangeSuccess).toBe(false)
+    })
+
+    it('弱いパスワード等(400)はpasswordChangeError="WEAK_PASSWORD"になる', async () => {
+      mockedAccountApi.changePassword.mockRejectedValue(new HttpError(400, 'Bad Request'))
+      const store = useAccountStore()
+
+      const result = await store.changePassword({
+        currentPassword: 'OldCorrect#1',
+        newPassword: 'weak',
+      })
+
+      expect(result).toBe(false)
+      expect(store.passwordChangeError).toBe('WEAK_PASSWORD')
+    })
+
+    it('その他のエラーはpasswordChangeError="default"になる', async () => {
+      mockedAccountApi.changePassword.mockRejectedValue(new HttpError(500, 'Internal Server Error'))
+      const store = useAccountStore()
+
+      const result = await store.changePassword({
+        currentPassword: 'OldCorrect#1',
+        newPassword: 'NewCorrect#2',
+      })
+
+      expect(result).toBe(false)
+      expect(store.passwordChangeError).toBe('default')
+    })
+
+    it('直前の失敗後に成功するとpasswordChangeErrorはリセットされる', async () => {
+      mockedAccountApi.changePassword.mockRejectedValueOnce(
+        new HttpError(422, 'Unprocessable Entity'),
+      )
+      const store = useAccountStore()
+      await store.changePassword({ currentPassword: 'Wrong#1', newPassword: 'NewCorrect#2' })
+      expect(store.passwordChangeError).toBe('INVALID_CURRENT_PASSWORD')
+
+      mockedAccountApi.changePassword.mockResolvedValueOnce(undefined)
+      await store.changePassword({ currentPassword: 'OldCorrect#1', newPassword: 'NewCorrect#2' })
+
+      expect(store.passwordChangeError).toBeNull()
+      expect(store.passwordChangeSuccess).toBe(true)
+    })
+  })
 })
