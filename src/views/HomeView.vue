@@ -5,8 +5,10 @@ import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import AppLayout from '@/components/AppLayout.vue'
 import heroImage from '@/assets/hero.png'
+import { useAuthStore } from '@/stores/auth'
 
 const { t } = useI18n()
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -23,7 +25,12 @@ const { t } = useI18n()
             <RouterLink to="/catalog" class="jps-btn jps-btn-primary jps-btn-lg">
               {{ t('home.hero.browseCatalog') }}
             </RouterLink>
-            <RouterLink to="/register" class="jps-btn jps-btn-secondary jps-btn-lg">
+            <!-- #34 AC4: 認証済み時はNew Here?(/register)導線を非表示にする。 -->
+            <RouterLink
+              v-if="!authStore.isAuthenticated"
+              to="/register"
+              class="jps-btn jps-btn-secondary jps-btn-lg"
+            >
               {{ t('home.hero.newHere') }}
             </RouterLink>
           </div>

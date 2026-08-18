@@ -64,6 +64,13 @@ function handleSearchSubmit() {
           <span class="app-header__greeting">
             {{ t('app.header.account.greeting', { username: authStore.user?.username }) }}
           </span>
+          <!-- #34 AC1: 注文履歴/アカウント設定への導線(認証時のみ平置き。Q1=案A-1確定)。 -->
+          <RouterLink to="/account/orders" class="jps-navlink" active-class="jps-navlink-active">
+            {{ t('app.header.nav.orders') }}
+          </RouterLink>
+          <RouterLink to="/account" class="jps-navlink" active-class="jps-navlink-active">
+            {{ t('app.header.nav.account') }}
+          </RouterLink>
           <button type="button" class="jps-btn jps-btn-ghost jps-btn-sm" @click="handleSignOff">
             {{ t('app.header.account.signOut') }}
           </button>
