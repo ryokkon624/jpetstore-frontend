@@ -1,4 +1,4 @@
-// 英語のみ（PO決定・Refinement 2026-08-11）。日本語は将来スプリント(#25)。
+// #25: 日本語(ja.ts)を追加。両ファイルはshapeをミラーする(未翻訳キーはfallbackLocale='en'で自動フォールバック)。
 // キー構造: domain.context.key（frontend-conventions 準拠）
 export default {
   app: {
@@ -22,6 +22,25 @@ export default {
         label: 'Search products',
         placeholder: 'Search products…',
       },
+      // #36 AC1: ヘッダーのテーマ設定ドロップダウン(アイコン+Light/Dark/Systemの3択)。
+      // #25 AC5: ヘッダーの言語切替ドロップダウン(English/日本語の2択)。
+      settings: {
+        theme: {
+          label: 'Theme',
+          options: {
+            system: 'System',
+            light: 'Light',
+            dark: 'Dark',
+          },
+        },
+        language: {
+          label: 'Language',
+          options: {
+            en: 'English',
+            ja: '日本語',
+          },
+        },
+      },
     },
   },
   home: {
@@ -31,10 +50,6 @@ export default {
       lead: 'Fish, dogs, cats, reptiles, and birds — JPetStore is your online pet store for finding your perfect companion.',
       browseCatalog: 'Browse Catalog',
       newHere: 'New Here?',
-    },
-    tokens: {
-      title: 'Design Token Check',
-      desc: 'A verification slot confirming the CSS custom properties (--jps-primary / --jps-accent / --jps-surface, etc.) and the \\@layer classes defined in main.css work as expected.',
     },
   },
   catalog: {
@@ -139,6 +154,9 @@ export default {
         english: 'English',
         japanese: 'Japanese',
       },
+      // #36 Q2(パリティ): ヘッダーのテーマドロップダウンと対称にAccountEditでも編集可にする
+      // (選択肢テキストはapp.header.settings.theme.optionsを再利用)。
+      colorSchemePreferenceLabel: 'Theme',
       favoriteCategoryLabel: 'Favorite Category',
       favoriteCategoryNone: 'None',
       // #15 導線: 編集画面からPW変更画面へのリンク。

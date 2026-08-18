@@ -117,7 +117,7 @@ watch(
 
           <button
             type="button"
-            class="jps-btn jps-btn-primary jps-btn-lg"
+            class="jps-btn jps-btn-primary jps-btn-lg item-detail-view__add-to-cart"
             :disabled="catalogStore.currentItem.stockStatus === 'OUT_STOCK' || isAddingToCart"
             @click="handleAddToCart"
           >

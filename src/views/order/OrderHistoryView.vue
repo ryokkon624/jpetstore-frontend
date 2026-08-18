@@ -9,7 +9,7 @@ import AppLayout from '@/components/AppLayout.vue'
 import Pagination from '@/components/catalog/Pagination.vue'
 import { useOrderStore } from '@/stores/order'
 
-const { t, n } = useI18n()
+const { t, n, d } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const orderStore = useOrderStore()
@@ -21,6 +21,12 @@ const currentPage = computed(() => {
 
 function formatPrice(price: number): string {
   return n(price, { style: 'currency', currency: 'USD' })
+}
+
+// #25 AC3(Q-1最小): backendのLocalDate(ISO文字列)をlocale連動で整形する(datetimeFormats.short)。
+// 通貨(formatPrice)と異なり、以前は素のISO文字列をそのまま表示していた(未整形)。
+function formatDate(isoDate: string): string {
+  return d(new Date(isoDate), 'short')
 }
 
 function handlePageChange(page: number) {
@@ -61,7 +67,7 @@ watch(currentPage, () => orderStore.fetchHistory(currentPage.value), { immediate
                   {{ order.orderId }}
                 </router-link>
               </td>
-              <td>{{ order.orderDate }}</td>
+              <td>{{ formatDate(order.orderDate) }}</td>
               <td class="jps-price">{{ formatPrice(order.totalPrice) }}</td>
             </tr>
           </tbody>

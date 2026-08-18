@@ -51,5 +51,7 @@ export interface AccountEditDetail {
   country: string
   languagePreference: string
   favoriteCategoryId: string | null
+  /** #36 AC5/AC7: テーマ配色設定('system'/'light'/'dark'・DB値そのまま)。 */
+  colorSchemePreference: string
   version: number
 }

@@ -53,7 +53,10 @@ describe('SignonView', () => {
   })
 
   it('signon成功時にredirectクエリの相対パスへ復帰する(AC8)', async () => {
-    mockedAuthApi.login.mockResolvedValue({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValue({
+      user: { username: 'j2ee', roles: ['USER'] },
+      preferences: { colorSchemePreference: 'system', languagePreference: 'english' },
+    })
     const { wrapper, router } = await mountSignonView('/signon?redirect=/account/orders')
 
     await wrapper.find('input[name="username"]').setValue('j2ee')
@@ -65,7 +68,10 @@ describe('SignonView', () => {
   })
 
   it('signon成功時にredirectクエリが外部URLなら/へフォールバックする(AC-neg2・オープンリダイレクト対策)', async () => {
-    mockedAuthApi.login.mockResolvedValue({ username: 'j2ee', roles: ['USER'] })
+    mockedAuthApi.login.mockResolvedValue({
+      user: { username: 'j2ee', roles: ['USER'] },
+      preferences: { colorSchemePreference: 'system', languagePreference: 'english' },
+    })
     const { wrapper, router } = await mountSignonView('/signon?redirect=https://evil.com')
 
     await wrapper.find('input[name="username"]').setValue('j2ee')

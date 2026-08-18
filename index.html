@@ -5,6 +5,24 @@
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>JPetStore</title>
+    <!--
+      #36 AC4(Q3): テーマ配色のFOUC対策。Vueのモジュールdownload/parseを待たず、初回描画前に
+      同期インラインscriptでlocalStorageの選択を<html>へ適用する(system=クラス付与なし・OS追従のまま)。
+      utils/preferencesStorage.tsのCOLOR_SCHEME_STORAGE_KEYと同じキー('jps.colorScheme')を直接参照する
+      (このscript自体はモジュールを読み込めないため文字列で複製・キー変更時は両方を更新すること)。
+    -->
+    <script>
+      ;(function () {
+        try {
+          var v = window.localStorage.getItem('jps.colorScheme')
+          if (v === 'light' || v === 'dark') {
+            document.documentElement.classList.add(v)
+          }
+        } catch (e) {
+          // noop: localStorageが使えない環境ではSystem(OS追従)のまま描画する
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="app"></div>

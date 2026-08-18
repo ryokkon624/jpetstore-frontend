@@ -36,19 +36,6 @@ const authStore = useAuthStore()
           </div>
         </div>
       </section>
-
-      <!-- デザイントークンがこの雛形で有効に効いていることの確認スロット -->
-      <section class="tokens jps-card jps-card-pad">
-        <h2 class="tokens__title">{{ t('home.tokens.title') }}</h2>
-        <p class="tokens__desc">{{ t('home.tokens.desc') }}</p>
-        <div class="tokens__row">
-          <span class="jps-badge badge-jps-stock-in">{{ t('catalog.stockStatus.inStock') }}</span>
-          <span class="jps-badge badge-jps-stock-low">{{ t('catalog.stockStatus.lowStock') }}</span>
-          <span class="jps-badge badge-jps-stock-out">{{ t('catalog.stockStatus.outStock') }}</span>
-          <span class="jps-chip">Fish</span>
-          <span class="jps-chip jps-chip-active">Dogs</span>
-        </div>
-      </section>
     </div>
   </AppLayout>
 </template>
@@ -121,26 +108,6 @@ const authStore = useAuthStore()
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 0.25rem;
-}
-
-/* ── トークン確認 ── */
-.tokens__title {
-  font-size: 1.125rem;
-  margin-bottom: 0.5rem;
-}
-
-.tokens__desc {
-  font-size: 0.8125rem;
-  line-height: 1.9;
-  color: var(--jps-text-muted);
-  margin-bottom: 1rem;
-}
-
-.tokens__row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.625rem;
 }
 
 /* ── レスポンシブ: 狭い画面では画像を上、テキストを下に積む ── */
