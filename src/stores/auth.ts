@@ -5,15 +5,20 @@ import { HttpError } from '@/api/httpClient'
 import type { AuthenticatedUser } from '@/domain/authUser'
 import type { RegisterPayload } from '@/domain/account'
 
-/** #13 AC1/AC3/AC4: 登録失敗の分類（HTTPステータス起点。`order.ts`のPlaceOrderErrorReasonと同じ設計）。 */
-export type RegisterErrorReason =
-  'USERNAME_TAKEN' | 'RATE_LIMITED' | 'PASSWORD_MISMATCH' | 'default'
+/**
+ * #13 AC1/AC3/AC4: 登録失敗の分類（HTTPステータス起点。`order.ts`のPlaceOrderErrorReasonと同じ設計）。
+ *
+ * <p>#17retrofit: 400はパスワード不一致に限らずemail形式/最大長/PW強度等の複数原因になり得るため、
+ * `PASSWORD_MISMATCH`固定から`VALIDATION_ERROR`へ一般化した（backendは権威400のbackstop・frontend自前の
+ * フィールド単位検証＝{@code utils/accountValidation.ts}が正常系ではこの400経路を潰す想定）。
+ */
+export type RegisterErrorReason = 'USERNAME_TAKEN' | 'RATE_LIMITED' | 'VALIDATION_ERROR' | 'default'
 
 function toRegisterErrorReason(error: unknown): RegisterErrorReason {
   if (error instanceof HttpError) {
     if (error.status === 409) return 'USERNAME_TAKEN'
     if (error.status === 429) return 'RATE_LIMITED'
-    if (error.status === 400) return 'PASSWORD_MISMATCH'
+    if (error.status === 400) return 'VALIDATION_ERROR'
   }
   return 'default'
 }
