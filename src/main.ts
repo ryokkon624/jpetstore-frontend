@@ -12,7 +12,6 @@ async function bootstrap() {
 
   app.use(createPinia())
   app.use(i18n)
-  app.use(router)
 
   // AC7: CSRF Cookie(XSRF-TOKEN)を発行させる。
   // #24 論点①: httpOnly Cookie は生きていても Pinia の identity はリロードで揮発するため、
@@ -21,6 +20,11 @@ async function bootstrap() {
   // /me が401でsilent refreshに入る場合でも、httpClientがCSRF Cookie未取得なら自己primeするため
   // 並列化しても正しさは保たれる。
   await Promise.all([primeCsrfToken(), useAuthStore().fetchCurrentUser()])
+
+  // #33: app.use(router)はここまで遅延させる。vue-routerはinstall時に初期ナビゲーションを
+  // 開始しauthGuardを評価するため、再水和(fetchCurrentUser)完了より前にinstallすると
+  // isAuthenticated=falseのまま保護ルートが誤ってsignonへ誘導される(リロード/直リンクで再現)。
+  app.use(router)
 
   app.mount('#app')
 }
